@@ -9,7 +9,7 @@ To get started with this FastAPI application, follow these steps:
 
 1. **Clone the repository**:
     ```bash
-    git clone https://github.com/smandalsid/ExpenseMgr-fastapi-postgres-docker-alembic.git
+    git clone https://github.com/smandalsid/ExpenseMgr-fastapi-mssql-server-docker-alembic.git
     cd ExpenseMgr-fastapi-postgres-docker-alembic
     ```
 2. **Request for the env variables**:
