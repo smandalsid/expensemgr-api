@@ -1,8 +1,12 @@
 from expensemgr.database.db import Base
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, func
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, func, PrimaryKeyConstraint
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = (
+        PrimaryKeyConstraint("user_id", name="user_pk"),
+        {"schema": "user_schema"},
+    )
     
     user_id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, index=True, nullable=False)

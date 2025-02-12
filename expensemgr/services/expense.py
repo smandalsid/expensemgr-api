@@ -1,7 +1,8 @@
 from typing import List
+from sqlalchemy import or_, and_
 
 from expensemgr.database.db import db_dependency
-from expensemgr.schemas.expense import ExpenseBase, CreateExpense, ExpenseOut
+from expensemgr.schemas.expense import ExpenseBase, CreateExpense, ExpenseOut, RequestExpense
 from expensemgr.database.models.expense import Expense, Currency
 from expensemgr.routers.users import user_dependency
 
@@ -34,3 +35,27 @@ class ExpenseService:
             join(Currency, Expense.currency_id == Currency.currency_id). \
             filter(Expense.user_id == self.user.get('id')). \
             all()
+    
+    def get_expense(self, request: RequestExpense) -> List[ExpenseOut]:
+
+        filters = [
+            Expense.user_id == self.user.get('id'),
+            or_(
+                *[Expense.currency_id == x for x in request.currency_id],
+            ) if request.currency_id else None,
+            or_(
+                *[Expense.expense_id == x for x in request.expense_id]
+            ) if request.expense_id else None,
+        ]
+
+        result = self.db.query(
+            Expense.amount.label("amount"),
+            Expense.description.label("description"),
+            Expense.expense_id.label("expense_id"),
+            Currency.abbr.label("currency_abbr")
+        )\
+        .join(Currency, Expense.currency_id == Currency.currency_id) \
+        .filter(*[x for x in filters if x is not None]).all()
+
+        return result
+    

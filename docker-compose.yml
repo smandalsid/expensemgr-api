@@ -17,7 +17,7 @@ services:
     image: mcr.microsoft.com/mssql/server:2019-latest
     container_name: docker-fastapi-app-db
     environment:
-      DATABASE_NAME: ${DATABASE_NAME}
+      DEV_DATABASE_NAME: ${DEV_DATABASE_NAME}
       TEST_DATABASE_NAME: ${TEST_DATABASE_NAME}
       SA_PASSWORD: ${SA_PASSWORD}
       ACCEPT_EULA: ${Y}

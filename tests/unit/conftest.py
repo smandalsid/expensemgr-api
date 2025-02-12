@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from fastapi.testclient import TestClient
 from dotenv import load_dotenv
-from typing import Generator
+from typing import Generator, List
 import os
 import sys
 from datetime import timedelta
@@ -95,24 +95,39 @@ def admin_user(db, test_user, client: TestClient):
 
 @pytest.fixture(scope="module")
 def currency(db, admin_user: User):
-    test_currency = Currency(
-        created_by = admin_user.user_id,
-        abbr = "TESTCUR",
-        desc = "Test Currency"
-    )
-    db.add(test_currency)
+    test_currency = [
+        Currency(
+            created_by = admin_user.user_id,
+            abbr = "TESTCUR1",
+            desc = "Test Currency 1"
+        ),
+        Currency(
+            created_by = admin_user.user_id,
+            abbr = "TESTCUR2",
+            desc = "Test Currency 2"
+        )
+    ]
+    db.add_all(test_currency)
     db.commit()
     yield test_currency
 
 @pytest.fixture(scope="module")
-def expense(db, regular_user: User, currency: Currency):
-    test_expense = Expense(
-        user_id = regular_user.user_id,
-        currency_id = currency.currency_id,
-        amount = 100,
-        description = "Test Expense"
-    )
+def expense(db, regular_user: User, currency: List[Currency]):
+    test_expense = [
+        Expense(
+            user_id = regular_user.user_id,
+            currency_id = currency[0].currency_id,
+            amount = 100,
+            description = "Test Expense 1"
+        ),
+        Expense(
+            user_id = regular_user.user_id,
+            currency_id = currency[1].currency_id,
+            amount = 200,
+            description = "Test Expense 2"
+        )
+    ]
 
-    db.add(test_expense)
+    db.add_all(test_expense)
     db.commit()
     yield test_expense

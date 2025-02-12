@@ -8,6 +8,7 @@ from typing import Annotated
 load_dotenv()
 
 SQLALCHEMY_DATABASE_URL = os.getenv("SQLALCHEMY_DATABASE_URL")
+TEST_DATABASE_URL = os.getenv("TESTDB_URL")
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 sessionLocal = sessionmaker(autocommit = False, autoflush = False, bind = engine)

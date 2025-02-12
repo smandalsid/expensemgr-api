@@ -1,4 +1,11 @@
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'ExpenseMgr')
-BEGIN
-    CREATE DATABASE ExpenseMgr;
-END
+CREATE DATABASE $(DEV_DATABASE_NAME);
+GO
+
+USE $(DEV_DATABASE_NAME)
+GO
+
+CREATE SCHEMA user_schema
+GO
+
+CREATE SCHEMA money_schema
+GO
