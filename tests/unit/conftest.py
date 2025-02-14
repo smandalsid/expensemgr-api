@@ -53,10 +53,6 @@ def client(db: Session) -> Generator[TestClient, any, any]:
             db.close()
     app.dependency_overrides[get_db]=override_get_db
 
-    def override_get_current_user():
-        return {'username':'testuser', 'id':1, 'is_admin':False}
-    app.dependency_overrides[AuthService(db).get_current_user]=override_get_current_user
-
     with TestClient(app) as client:
         yield client
     app.dependency_overrides.clear()
