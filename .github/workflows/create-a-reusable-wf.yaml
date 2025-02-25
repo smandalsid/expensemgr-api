@@ -1,0 +1,17 @@
+name: Calling Reusable Workflows
+on:
+    workflow_dispatch:
+        inputs:
+            name:
+                description: "Input Description"
+                type: string
+                default: "Hello"
+                required: false
+
+jobs:
+    calling-a-reusable-workflow:
+        uses: smandalsid/GithubActions-WorkFlows/.github/workflows/reusable.yaml@main
+        with:
+            name: ${{ github.event.inputs.name }}
+        secrets:
+            access-token: ${{ secrets.ACCESS_TOKEN }}
