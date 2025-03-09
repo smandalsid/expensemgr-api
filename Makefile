@@ -14,6 +14,7 @@ stop:
 	docker stop docker-fastapi-app-db
 
 test:
+	docker-compose down
 	docker-compose up --build 'app-test'
 
 ims:

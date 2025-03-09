@@ -4,6 +4,8 @@ services:
   app:
     build: .
     container_name: fastapi-app
+    environment:
+      - ENV=dev
     ports:
       - "8000:8000"
     depends_on:
@@ -35,6 +37,8 @@ services:
     build:
       context: .
       dockerfile: expensemgr/docker/application-testing/Dockerfile
+    environment:
+      - ENV=test
     depends_on:
       - app-db
     networks:
@@ -43,8 +47,6 @@ services:
       - .env
     volumes:
       - ./:/app
-    environment:
-      - SQLALCHEMY_DATABASE_URL=${TESTDB_URL}
 
 networks:
  app-network:
