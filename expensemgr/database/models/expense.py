@@ -2,6 +2,8 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey, ForeignKeyCon
 
 from expensemgr.database.db import Base
 
+# Models for money schema tables
+
 class Currency(Base):
     __tablename__ = "currency"
     __table_args__ = (

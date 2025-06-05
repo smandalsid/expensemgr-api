@@ -1,6 +1,8 @@
 from expensemgr.database.db import Base
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, func, PrimaryKeyConstraint
 
+# Models for user_schema tables
+
 class User(Base):
     __tablename__ = "users"
     __table_args__ = (
