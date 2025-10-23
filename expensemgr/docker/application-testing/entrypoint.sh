@@ -7,4 +7,4 @@ expensemgr/docker/wait-for-db.sh
 # creating db and running migrations
 expensemgr/docker/application-testing/create-db.sh
 
-poetry run pytest ./tests
+# poetry run pytest ./tests

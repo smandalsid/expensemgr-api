@@ -16,7 +16,7 @@ services:
       - .env
     
   app-db:
-    image: mcr.microsoft.com/mssql/server:2019-latest
+    image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: docker-fastapi-app-db
     environment:
       DEV_DATABASE_NAME: ${DEV_DATABASE_NAME}
@@ -38,7 +38,7 @@ services:
       context: .
       dockerfile: expensemgr/docker/application-testing/Dockerfile
     environment:
-      - ENV=test
+      SQLALCHEMY_DATABASE_URL: mssql+pyodbc://sa:Password123@app-db:1433/ExpenseMgrTest?driver=ODBC+Driver+18+for+SQL+Server&MARS_Connection=Yes&TrustServerCertificate=yes&timeout=60
     depends_on:
       - app-db
     networks:

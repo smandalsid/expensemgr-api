@@ -2,8 +2,8 @@
 export
 
 build:
-	docker-compose down
-	docker-compose up --build 'app'
+	docker compose down
+	docker compose up --build 'app'
 
 run:
 	docker start docker-fastapi-app-db
@@ -14,8 +14,8 @@ stop:
 	docker stop docker-fastapi-app-db
 
 test:
-	docker-compose down
-	docker-compose up --build 'app-test'
+	docker compose down
+	docker compose up --build 'app-test'
 
 ims:
 	docker images

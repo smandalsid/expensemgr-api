@@ -3,7 +3,7 @@
 echo "Waiting for SQL Server to start..."
 for i in {1..50};
 do
- /opt/mssql-tools/bin/sqlcmd -S tcp:$SQL_SERVER,$SQL_PORT -U $SQL_USER -P $SQL_PASSWORD -Q "SELECT 1" &> /dev/null
+ /opt/mssql-tools18/bin/sqlcmd -S tcp:$SQL_SERVER,$SQL_PORT -U $SQL_USER -P $SQL_PASSWORD -Q "SELECT 1" -C&> /dev/null
  if [ $? -eq 0 ]; then
    echo "SQL Server is up."
    break

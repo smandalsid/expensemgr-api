@@ -4,16 +4,22 @@ WORKDIR /
 
 ENV PYTHONPATH=/
 
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-    && curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list \
-    && apt-get update \
-    && ACCEPT_EULA=Y apt-get install --no-install-recommends -y \
-        build-essential \
-        python3-dev \
-        msodbcsql17 \
-        mssql-tools \
-        unixodbc-dev \
-        unixodbc
+# Download the package to configure the Microsoft repo
+RUN curl -sSL -O https://packages.microsoft.com/config/ubuntu/24.10/packages-microsoft-prod.deb
+# Install the package
+RUN dpkg -i packages-microsoft-prod.deb
+# Delete the file
+RUN rm packages-microsoft-prod.deb
+
+# Install the driver
+RUN apt-get update
+RUN ACCEPT_EULA=Y apt-get install -y msodbcsql18
+# optional: for bcp and sqlcmd
+RUN ACCEPT_EULA=Y apt-get install -y mssql-tools18
+RUN echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
+# RUN source ~/.bashrc
+# optional: for unixODBC development headers
+RUN apt-get install -y unixodbc-dev
 
 RUN pip install pyodbc
 
