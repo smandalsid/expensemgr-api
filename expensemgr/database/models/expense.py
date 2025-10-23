@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, ForeignKeyConstraint, PrimaryKeyConstraint
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, ForeignKeyConstraint, PrimaryKeyConstraint, DateTime, func
 
 from expensemgr.database.db import Base
 
@@ -18,6 +18,7 @@ class Currency(Base):
     created_by = Column(Integer, ForeignKey("user_schema.users.user_id"))
     abbr = Column(String(10), unique=True, index=True, nullable=False)
     desc = Column(String(255), nullable=False)
+    meta_changed_dttm = Column(DateTime, default=func.now())
 
 
 class Expense(Base):
@@ -38,3 +39,4 @@ class Expense(Base):
     currency_id = Column(Integer, ForeignKey("money_schema.currency.currency_id"))
     amount = Column(Float, nullable=False)
     description = Column(String(255))
+    meta_changed_dttm = Column(DateTime, default=func.now())

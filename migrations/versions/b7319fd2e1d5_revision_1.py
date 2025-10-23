@@ -1,8 +1,8 @@
-"""empty message
+"""revision-1
 
-Revision ID: a6841cb6419d
+Revision ID: b7319fd2e1d5
 Revises: 
-Create Date: 2025-02-08 10:00:21.507725
+Create Date: 2025-10-24 02:09:42.517889
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'a6841cb6419d'
+revision: str = 'b7319fd2e1d5'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -30,6 +30,7 @@ def upgrade() -> None:
     sa.Column('phone_number', sa.String(), nullable=False),
     sa.Column('is_admin', sa.Boolean(), server_default='FALSE', nullable=True),
     sa.Column('last_login', sa.DateTime(), nullable=True),
+    sa.Column('meta_changed_dttm', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('user_id', name='user_pk'),
     schema='user_schema'
     )
@@ -41,6 +42,7 @@ def upgrade() -> None:
     sa.Column('created_by', sa.Integer(), nullable=True),
     sa.Column('abbr', sa.String(length=10), nullable=False),
     sa.Column('desc', sa.String(length=255), nullable=False),
+    sa.Column('meta_changed_dttm', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['created_by'], ['user_schema.users.user_id'], ),
     sa.ForeignKeyConstraint(['created_by'], ['user_schema.users.user_id'], name='currency_fk01'),
     sa.PrimaryKeyConstraint('currency_id', name='currency_pk'),
@@ -54,6 +56,7 @@ def upgrade() -> None:
     sa.Column('currency_id', sa.Integer(), nullable=True),
     sa.Column('amount', sa.Float(), nullable=False),
     sa.Column('description', sa.String(length=255), nullable=True),
+    sa.Column('meta_changed_dttm', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['currency_id'], ['money_schema.currency.currency_id'], ),
     sa.ForeignKeyConstraint(['currency_id'], ['money_schema.currency.currency_id'], name='expense_fk02'),
     sa.ForeignKeyConstraint(['user_id'], ['user_schema.users.user_id'], ),
