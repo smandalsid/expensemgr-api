@@ -19,3 +19,4 @@ class User(Base):
     phone_number = Column(String, nullable=False)
     is_admin = Column(Boolean, server_default='FALSE')
     last_login = Column(DateTime, default=func.now())
+    meta_changed_dttm = Column(DateTime, default=func.now())
