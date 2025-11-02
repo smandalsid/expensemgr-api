@@ -20,5 +20,4 @@ class User(Base):
     is_admin = Column(Boolean, server_default='FALSE')
     last_login = Column(DateTime, default=func.now())
     meta_changed_dttm = Column(DateTime, default=func.now())
-    meta_changed_by = Column(Integer, nullable=False)
     user_active_ind = Column(Boolean, server_default='TRUE')

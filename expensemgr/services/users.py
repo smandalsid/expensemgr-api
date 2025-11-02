@@ -38,12 +38,12 @@ class UserService:
         self.db.add(create_user_model)
         self.db.commit()
 
-        user = self.db.query(User).filter(User.user_id == create_user_model.user_id).first()
+        user = self.db.query(User).filter(User.user_key == create_user_model.user_key).first()
         return user
 
     def get_user(self, user: user_dependency):
 
-        user_response = self.db.query(User).filter(User.user_id == user.get('id')).first()
+        user_response = self.db.query(User).filter(User.user_key == user.get('user_key')).first()
         if user_response is not None:
             return user_response
         else:

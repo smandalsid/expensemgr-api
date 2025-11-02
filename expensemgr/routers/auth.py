@@ -25,5 +25,5 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     user = service.authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
-    token = service.create_access_token(user.username, user.user_id, user.is_admin, timedelta(minutes=30))
+    token = service.create_access_token(user.username, user.user_key, user.is_admin, timedelta(minutes=30))
     return {'access_token': token, 'token_type': 'bearer'}
