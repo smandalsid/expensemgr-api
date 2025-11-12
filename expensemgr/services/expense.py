@@ -14,8 +14,8 @@ class ExpenseService:
 
     def create_expense(self, expense: CreateExpense) -> ExpenseBase:
         new_expense = Expense(
-            user_id = self.user.get('id'),
-            currency_id = expense.currency_id,
+            primary_user_key = self.user.get('user_key'),
+            currency_key = expense.currency_key,
             amount = expense.amount,
             description = expense.description
         )
