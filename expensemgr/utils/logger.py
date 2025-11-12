@@ -4,7 +4,7 @@ from functools import wraps
 from datetime import datetime, timezone
 from typing import Optional
 
-class KoandaLogger:
+class BaseLogger:
     def __init__(self, name: Optional[str]):
         self.logger = logging.getLogger(name=name)
         self.logger.setLevel(level=logging.INFO)
@@ -13,11 +13,11 @@ class KoandaLogger:
         stream_handler.setFormatter(logging.Formatter(f"%(asctime)s | %(name)s | %(levelname)s | %(message)s"))
         self.logger.addHandler(stream_handler)
 
-    def get_logger(self, name: Optional[str]) -> logging.Logger:
+    def get_logger(self, name: Optional[str] = None) -> logging.Logger:
         if self.logger is None:
             return self.__new__(name)
 
-    def koanda_logger(self, log_args: bool = False, log_result: bool = False):
+    def wrapper_logger(self, log_args: bool = False, log_result: bool = False):
         def decorator(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
@@ -37,3 +37,4 @@ class KoandaLogger:
             return wrapper
         return decorator
                 
+expense_mgr_logger = BaseLogger(name='expense_mgr_logger')
