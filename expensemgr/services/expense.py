@@ -2,9 +2,15 @@ from typing import List
 from sqlalchemy import or_, and_
 
 from expensemgr.database.db import db_dependency
-from expensemgr.schemas.expense import ExpenseBase, CreateExpense, ExpenseOut, RequestExpense
-from expensemgr.database.models.expense import Expense, Currency
+from expensemgr.schemas.expense import CreateExpense, ExpenseOut, RequestExpense
+from expensemgr.database.models.expense import Expense, ExpenseVer, Currency
+from expensemgr.database.models.expense import Expense, ExpenseVer, Currency
 from expensemgr.routers.users import user_dependency
+
+from expensemgr.database.db import engine
+
+class ExpenseCreationException(Exception):
+    pass
 
 class ExpenseService:
     
@@ -12,19 +18,35 @@ class ExpenseService:
         self.db = db
         self.user = user
 
-    def create_expense(self, expense: CreateExpense) -> ExpenseBase:
-        new_expense = Expense(
-            primary_user_key = self.user.get('user_key'),
-            currency_key = expense.currency_key,
-            amount = expense.amount,
-            description = expense.description
-        )
-        self.db.add(new_expense)
-        self.db.commit()
+    def create_expense(self, expense: CreateExpense) -> ExpenseOut:
+        secondary_users, secondary_user_share = expense.user_expense_secondary_share.keys(), expense.user_expense_secondary_share.values()
 
-        expense = self.db.query(Expense).filter(Expense.expense_id == new_expense.expense_id).first()
-        return expense
-    
+        try:
+            # new_expense = Expense(
+            #     primary_user_key = expense.primary_user_key,
+            #     currency_key = expense.currency_key,
+            #     division_by_key = expense.division_by_key,
+            #     total_amount = expense.total_amount,
+            #     expense_desc = expense.expense_desc,
+            #     meta_changed_by = self.user.get("user_key"),
+            # )
+            new_expense_stmt = Expense.insert().values(
+                primary_user_key = expense.primary_user_key,
+                currency_key = expense.currency_key,
+                division_by_key = expense.division_by_key,
+                total_amount = expense.total_amount,
+                expense_desc = expense.expense_desc,
+                meta_changed_by = self.user.get("user_key"),
+            )
+            engine.execute(new_expense_stmt)
+
+            # new_expense_ver = ExpenseVer(
+
+            # )
+
+        except ExpenseCreationException as e:
+            raise e
+
     def get_all_expenses(self) -> List[ExpenseOut]:
         return \
             self.db.query(

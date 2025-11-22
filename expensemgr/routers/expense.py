@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, HTTPException, Query
 from typing import List, Optional
 
 from expensemgr.database.db import db_dependency
-from expensemgr.schemas.expense import ExpenseBase, CreateExpense, ExpenseOut, RequestExpense
+from expensemgr.schemas.expense import CreateExpense, ExpenseOut, RequestExpense
 from expensemgr.routers.users import user_dependency
 from expensemgr.services.expense import ExpenseService
 
@@ -11,7 +11,7 @@ router = APIRouter(
     tags=['expense'],
 )
 
-@router.post("/create", status_code=status.HTTP_201_CREATED, response_model=ExpenseBase)
+@router.post("/create", status_code=status.HTTP_201_CREATED, response_model=ExpenseOut)
 async def create_expense(db: db_dependency, user: user_dependency, create_expense: CreateExpense):
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication failed")
