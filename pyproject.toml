@@ -20,6 +20,9 @@ pyodbc = "^5.3.0"
 alembic = "^1.17.1"
 pytest-cov = "^7.0.0"
 bcrypt = "4.3.0"
+flake8 = "^7.3.0"
+black = "^25.11.0"
+isort = "^7.0.0"
 
 
 [build-system]
