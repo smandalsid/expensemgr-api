@@ -1,8 +1,8 @@
-"""base_revision
+"""empty message
 
-Revision ID: 550139955241
+Revision ID: 28fdea352c6c
 Revises: 
-Create Date: 2025-11-02 16:44:40.060814
+Create Date: 2025-11-23 10:51:48.434610
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '550139955241'
+revision: str = '28fdea352c6c'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -34,9 +34,10 @@ def upgrade() -> None:
     op.create_index(op.f('ix_money_schema_currency_currency_key'), 'currency', ['currency_key'], unique=False, schema='money_schema')
     op.create_table('division_by',
     sa.Column('division_by_key', sa.Integer(), nullable=False),
-    sa.Column('division_by_type', sa.String(length=10), nullable=False),
+    sa.Column('division_by_code', sa.String(length=10), nullable=False),
     sa.Column('division_by_type_desc', sa.String(length=100), nullable=False),
     sa.PrimaryKeyConstraint('division_by_key', name='division_by_pk'),
+    sa.UniqueConstraint('division_by_code'),
     schema='money_schema'
     )
     op.create_table('user',
