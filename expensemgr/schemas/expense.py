@@ -5,8 +5,8 @@ from pydantic import BaseModel, model_validator
 from pydantic_core import PydanticCustomError
 from sqlalchemy import select
 
-from expensemgr.database.db import engine
-from expensemgr.database.models.expense import DivisionBy as div_model
+from expensemgr.database.db import get_db_class, DB
+from expensemgr.database.models.expense import DivisionBy as div_model, Currency
 from expensemgr.utils.constants import DivisionBy as div_enum
 
 
@@ -22,14 +22,30 @@ class CreateExpense(BaseModel):
     def validate_secondary_shares(self):
         total_secondary_share = self.user_expense_secondary_share.values()
 
-        with engine.connect() as conn:
-            division_by_code = conn.execute(
-                select(
-                    div_model.division_by_code
-                ).where(
-                    div_model.division_by_key == self.division_by_key
-                )
-            ).fetchone()[0]
+
+        db_instance: DB = get_db_class()
+
+        currency_key_check = db_instance.fetch_one_record(
+            select(
+                Currency
+            ).where(
+                Currency.currency_key == self.currency_key
+            )
+        )
+        if not currency_key_check:
+            raise PydanticCustomError(
+                "expense-creation-error",
+                "Currency key does not exist!"
+            )
+
+        division_by_code = db_instance.fetch_one_record(
+            select(
+                div_model.division_by_code
+            ).where(
+                div_model.division_by_key == self.division_by_key
+            )
+        )
+        division_by_code = division_by_code.division_by_code if division_by_code else division_by_code
         if division_by_code == div_enum.AMOUNT.value:
             total_sum = sum(total_secondary_share)
             if total_sum != self.total_amount:
@@ -52,13 +68,16 @@ class CreateExpense(BaseModel):
                     "Invalid division type!",
                 )
 
+class ExpenseShare(BaseModel):
+    secondary_user_name: str
+    expense_share: float
 
 class ExpenseOut(BaseModel):
+    expense_key: int
     primary_user_name: str
-    secondary_user_names: Dict[str, float]
-    total_amount: float
     expense_desc: str
+    currency_code: str
+    division_by_code: str
+    expense_share: List[ExpenseShare]
+    total_amount: float
 
-class RequestExpense(BaseModel):
-    expense_key: Optional[List[int]] = Query(None)
-    currency_key: Optional[List[int]] = Query(None)
