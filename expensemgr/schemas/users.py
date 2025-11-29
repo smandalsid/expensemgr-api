@@ -11,7 +11,6 @@ class UserBase(BaseModel):
     email: EmailStr
     phone_number: str = "98XXXXXX76"
 
-
 # class to take input while creating user
 class CreateUser(UserBase):
     password: str
@@ -29,13 +28,6 @@ class CreateUser(UserBase):
         if not pattern.match(value):
             raise ValueError("Phone number is not valid")
         return value
-
-
-# class for input while login
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
 
 # class for output
 class UserOut(UserBase):

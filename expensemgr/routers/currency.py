@@ -17,7 +17,7 @@ router = APIRouter(
 @router.post(
     "/create", status_code=status.HTTP_201_CREATED, response_model=CurrencyBase
 )
-async def create_currency(
+def create_currency(
     user: user_dependency, db: db_dependency, currency: CurrencyBase
 ):
     if user is None or user.get("is_admin") == False:

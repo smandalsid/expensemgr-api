@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from expensemgr.database.db import Base, engine
+from expensemgr.database.db import Base, DB
 from expensemgr.routers import auth, currency, expense, users
 from expensemgr.utils.logger import expense_mgr_logger
 
@@ -12,6 +12,7 @@ app = FastAPI(
     ],
 )
 
+engine = DB.get_engine()
 Base.metadata.create_all(bind=engine)
 
 
