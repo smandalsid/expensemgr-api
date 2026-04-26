@@ -8,6 +8,7 @@ from expensemgr.database.models.users import User
 from expensemgr.schemas.users import CreateUser, UserOut
 from expensemgr.services.auth import AuthService
 from expensemgr.services.utils import bcrypt_context
+from expensemgr.utils.logger import expense_mgr_logger
 
 user_dependency = Annotated[dict, Depends(AuthService.get_current_user)]
 
@@ -17,6 +18,7 @@ class UserService:
     def __init__(self, db: db_dependency):
         self.db = db
 
+    @expense_mgr_logger.wrapper_logger(log_args=True)
     def create_user(self, create_user: CreateUser) -> UserOut:
         validation_1 = select(User).where(User.username == create_user.username)
         if self.db.fetch_one_record(query=validation_1):
@@ -55,6 +57,7 @@ class UserService:
         )
         return user
 
+    @expense_mgr_logger.wrapper_logger(log_args=True)
     def get_user(self, user: user_dependency):
         user = self.db.fetch_one_record(
             select(User).where(User.user_key == user.get("user_key"))
