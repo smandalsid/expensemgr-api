@@ -66,3 +66,30 @@
 # print(result)
 
 
+
+
+from abc import ABC, abstractmethod, abstractclassmethod
+
+class A(ABC):
+    _data = 'A'
+
+    @classmethod
+    @abstractmethod    
+    def change(cls, data):
+        raise NotImplementedError
+
+    @classmethod
+    @abstractmethod
+    def show(cls):
+        raise NotImplementedError
+
+class B(A):
+
+    @classmethod
+    def change(cls, data):
+        return super().change(data)
+    
+    @classmethod
+    def show(cls):
+        print(cls._data)
+    

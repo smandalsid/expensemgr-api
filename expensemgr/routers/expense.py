@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException, Query, status
-from typing import List, Optional, Union
+from fastapi import APIRouter, HTTPException, status
+from typing import List, Optional
 
 from expensemgr.database.db import db_dependency
 from expensemgr.routers.users import user_dependency

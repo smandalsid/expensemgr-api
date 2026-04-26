@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from expensemgr.database.db import Base, DB
-from expensemgr.routers import auth, currency, expense, users
+from expensemgr.routers import auth, currency, expense, users, exchange_rate
 from expensemgr.utils.logger import expense_mgr_logger
 
 app = FastAPI(
@@ -9,6 +9,7 @@ app = FastAPI(
     summary="This API will give the complete functionality of an expense manager application with user management, admin functionality, creating currencies, adding. sharing and managing expenses",
     servers=[
         {"url": "http://127.0.0.1:8000", "description": "Local environment"},
+        {"url": "https://hbxvkxqw-8000.inc1.devtunnels.ms", "description": "Tunnel deploy"},
     ],
 )
 
@@ -26,3 +27,4 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(expense.router)
 app.include_router(currency.router)
+app.include_router(exchange_rate.router)

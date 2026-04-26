@@ -20,11 +20,11 @@
 -- drop table [dbo].[alembic_version]
 
 -- select from all tables
--- select * from [user_schema].[user]
--- select * from [money_schema].[currency]
--- select * from [money_schema].[division_by]
+select * from [user_schema].[user]
+select * from [money_schema].[currency]
+select * from [money_schema].[division_by]
 select * from [money_schema].[expense]
--- select * from [money_schema].[expense_ver]
+select * from [money_schema].[expense_ver]
 
 -- initial admin update
 -- update [ExpenseMgr].[user_schema].[user]
