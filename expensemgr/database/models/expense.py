@@ -1,6 +1,15 @@
-from sqlalchemy import (Boolean, Column, DateTime, Float, ForeignKey,
-                        ForeignKeyConstraint, Integer, PrimaryKeyConstraint,
-                        String, func)
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    ForeignKeyConstraint,
+    Integer,
+    PrimaryKeyConstraint,
+    String,
+    func,
+)
 
 from expensemgr.database.db import Base
 
@@ -59,6 +68,7 @@ class Expense(Base):
     meta_changed_dttm = Column(DateTime, default=func.now())
     meta_changed_by = Column(Integer)
     expense_status = Column(Boolean, default=False, nullable=False)
+    delete_ind = Column(Boolean, default=False, nullable=False)
 
 
 class ExpenseVer(Base):
@@ -86,6 +96,10 @@ class ExpenseVer(Base):
     secondary_user_key = Column(Integer, nullable=False)
     expense_share = Column(Float, nullable=False)
     expense_ver_status = Column(Boolean, default=False, nullable=False)
+    version_effective_dttm = Column(DateTime, default=func.now(), nullable=False)
+    version_termination_dttm = Column(DateTime, default=None, nullable=True)
+    version_active_ind = Column(Boolean, default=True, nullable=False)
+    meta_changed_dttm = Column(DateTime, default=func.now(), nullable=False)
 
 
 class DivisionBy(Base):

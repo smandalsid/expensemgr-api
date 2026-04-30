@@ -9,12 +9,11 @@ app = FastAPI(
     summary="This API will give the complete functionality of an expense manager application with user management, admin functionality, creating currencies, adding. sharing and managing expenses",
     servers=[
         {"url": "http://127.0.0.1:8000", "description": "Local environment"},
-        {"url": "https://hbxvkxqw-8000.inc1.devtunnels.ms", "description": "Tunnel deploy"},
     ],
 )
 
 engine = DB.get_engine()
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 
 @app.get("/health")

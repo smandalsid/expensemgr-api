@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 28fdea352c6c
+Revision ID: 701aef755424
 Revises: 
-Create Date: 2025-11-23 10:51:48.434610
+Create Date: 2026-04-27 10:42:41.326165
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '28fdea352c6c'
+revision: str = '701aef755424'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -68,6 +68,7 @@ def upgrade() -> None:
     sa.Column('meta_changed_dttm', sa.DateTime(), nullable=True),
     sa.Column('meta_changed_by', sa.Integer(), nullable=True),
     sa.Column('expense_status', sa.Boolean(), nullable=False),
+    sa.Column('delete_ind', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['currency_key'], ['money_schema.currency.currency_key'], ),
     sa.ForeignKeyConstraint(['currency_key'], ['money_schema.currency.currency_key'], name='expense_fk02'),
     sa.ForeignKeyConstraint(['division_by_key'], ['money_schema.division_by.division_by_key'], ),
@@ -85,6 +86,10 @@ def upgrade() -> None:
     sa.Column('secondary_user_key', sa.Integer(), nullable=False),
     sa.Column('expense_share', sa.Float(), nullable=False),
     sa.Column('expense_ver_status', sa.Boolean(), nullable=False),
+    sa.Column('version_effective_dttm', sa.DateTime(), nullable=False),
+    sa.Column('version_termination_dttm', sa.DateTime(), nullable=True),
+    sa.Column('version_active_ind', sa.Boolean(), nullable=False),
+    sa.Column('meta_changed_dttm', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['expense_key'], ['money_schema.expense.expense_key'], ),
     sa.ForeignKeyConstraint(['expense_key'], ['money_schema.expense.expense_key'], name='expense_ver_fk01'),
     sa.ForeignKeyConstraint(['primary_user_key'], ['user_schema.user.user_key'], ),

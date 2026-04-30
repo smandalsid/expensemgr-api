@@ -14,7 +14,6 @@ user_dependency = Annotated[dict, Depends(AuthService.get_current_user)]
 
 
 class UserService:
-
     def __init__(self, db: db_dependency):
         self.db = db
 
