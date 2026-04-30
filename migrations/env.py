@@ -1,21 +1,17 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
+from sqlalchemy import engine_from_config, create_engine
 from sqlalchemy import pool
 from alembic import context
 
 # from expensemgr.database.models.users import Base as usersBase
 # from expensemgr.database.models.expense import Base as expenseBase
-from expensemgr.database.db import TEST_DATABASE_URL, SQLALCHEMY_DATABASE_URL, ENV, Base
+from expensemgr.database.db import TEST_DATABASE_URL, ENV, Base, SUPABASE_DIRECT_URL
 from expensemgr.database.models.expense import Expense, Currency
 from expensemgr.database.models.users import User
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-if ENV == "dev":
-    config.set_main_option("sqlalchemy.url", SQLALCHEMY_DATABASE_URL)
-elif ENV == "test":
-    config.set_main_option("sqlalchemy.url", TEST_DATABASE_URL)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -27,6 +23,17 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
+
+MANAGED_SCHEMAS = {"user_schema", "money_schema"}
+
+
+def include_object(object, name, type_, reflected, compare_to):
+    if type_ == "table":
+        return object.schema in MANAGED_SCHEMAS
+    if type_ == "schema":
+        return name in MANAGED_SCHEMAS
+    return True
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -52,6 +59,8 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_schemas=True,
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -65,15 +74,23 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    if ENV == "dev":
+        connectable = create_engine(SUPABASE_DIRECT_URL, poolclass=pool.NullPool)
+    elif ENV == "test":
+        connectable = create_engine(TEST_DATABASE_URL, poolclass=pool.NullPool)
+    else:
+        connectable = engine_from_config(
+            config.get_section(config.config_ini_section, {}),
+            prefix="sqlalchemy.",
+            poolclass=pool.NullPool,
+        )
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata, include_schemas=True
+            connection=connection,
+            target_metadata=target_metadata,
+            include_schemas=True,
+            include_object=include_object,
         )
 
         with context.begin_transaction():

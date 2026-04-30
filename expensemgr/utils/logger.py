@@ -1,4 +1,5 @@
 import logging
+
 # from typing import
 from datetime import datetime, timezone
 from functools import wraps
@@ -19,6 +20,7 @@ class BaseLogger:
     def get_logger(self, name: Optional[str] = None) -> logging.Logger:
         if self.logger is None:
             return self.__new__(name)
+        return self.logger
 
     def wrapper_logger(self, log_args: bool = False, log_result: bool = False):
         def decorator(func):
@@ -33,7 +35,7 @@ class BaseLogger:
                         self.logger.info(f"{func.__name__} returned - {result}")
                     end_time = datetime.now(timezone.utc)
                     self.logger.info(
-                        f"{func.__name__} - Execution time: {end_time-start_time}"
+                        f"{func.__name__} - Execution time: {end_time - start_time}"
                     )
                 except Exception as e:
                     self.logger.exception(

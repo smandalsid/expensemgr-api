@@ -10,9 +10,7 @@ with open("expensemgr/utils/exchange_rates/exchange_rates.json") as f:
 currency_codes = data.get("data").keys()
 
 for code in currency_codes:
-    stmt = insert(
-        Currency
-    ).values(
+    stmt = insert(Currency).values(
         currency_code=code,
         currency_desc=code,
         currency_name=code,

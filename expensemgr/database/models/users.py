@@ -1,5 +1,12 @@
-from sqlalchemy import (Boolean, Column, DateTime, Integer,
-                        PrimaryKeyConstraint, String, func)
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Integer,
+    PrimaryKeyConstraint,
+    String,
+    func,
+)
 
 from expensemgr.database.db import Base
 

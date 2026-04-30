@@ -3,11 +3,11 @@ from typing import Any, Union, Optional
 from threading import RLock
 from redis import Redis
 
-class CacheStore(ABC):
 
+class CacheStore(ABC):
     def __init__(self):
-       self._store_instance: Optional[Union[Redis]] = None
-       self._lock = RLock()
+        self._store_instance: Optional[Union[Redis]] = None
+        self._lock = RLock()
 
     @abstractmethod
     def set(self, key: Union[str, int], value: Any):
@@ -20,7 +20,7 @@ class CacheStore(ABC):
     @abstractmethod
     def exists(self, key: Union[str, int]) -> bool:
         raise NotImplementedError
-    
+
     @abstractmethod
     def delete(self, key: Union[str, int]):
         raise NotImplementedError

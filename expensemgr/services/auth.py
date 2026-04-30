@@ -14,7 +14,6 @@ from .utils import bcrypt_context
 
 
 class AuthService:
-
     def __init__(self, db: db_dependency):
         self.db = db
 

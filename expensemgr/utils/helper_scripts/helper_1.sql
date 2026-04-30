@@ -28,7 +28,7 @@ select * from [money_schema].[expense_ver]
 
 -- initial admin update
 -- update [ExpenseMgr].[user_schema].[user]
--- set is_admin = 1 where user_key = 2
+-- set is_admin = 1 where user_key = 1
 
 -- insert division by types
 -- insert into [ExpenseMgr].[money_schema].[division_by] (division_by_code, division_by_type_desc)values ('AMOUNT', 'Divide expense by amount'), ('PERCENTAGE', 'Divide expense by percentage')

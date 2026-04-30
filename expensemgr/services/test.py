@@ -10,7 +10,7 @@
 # from expensemgr.routers.users import user_dependency
 # from expensemgr.utils.logger import expense_mgr_logger
 
-# db = db_dependency  
+# db = db_dependency
 
 # results = db.fetch_records(
 #     select(
@@ -66,30 +66,33 @@
 # print(result)
 
 
+# from abc import ABC, abstractmethod, abstractclassmethod
+
+# class A(ABC):
+#     _data = 'A'
+
+#     @classmethod
+#     @abstractmethod
+#     def change(cls, data):
+#         raise NotImplementedError
+
+#     @classmethod
+#     @abstractmethod
+#     def show(cls):
+#         raise NotImplementedError
+
+# class B(A):
+
+#     @classmethod
+#     def change(cls, data):
+#         return super().change(data)
+
+#     @classmethod
+#     def show(cls):
+#         print(cls._data)
 
 
-from abc import ABC, abstractmethod, abstractclassmethod
+from expensemgr.cache_store.redis.redis_store import RedisStore
 
-class A(ABC):
-    _data = 'A'
-
-    @classmethod
-    @abstractmethod    
-    def change(cls, data):
-        raise NotImplementedError
-
-    @classmethod
-    @abstractmethod
-    def show(cls):
-        raise NotImplementedError
-
-class B(A):
-
-    @classmethod
-    def change(cls, data):
-        return super().change(data)
-    
-    @classmethod
-    def show(cls):
-        print(cls._data)
-    
+redis_instance = RedisStore.get_instance()
+redis_instance.set()
