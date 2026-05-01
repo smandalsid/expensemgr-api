@@ -33,6 +33,13 @@ locust = "^2.42.5"
 upstash-redis = "^1.7.0"
 
 
+[project]
+name = "expensemgr"
+version = "0.1.0"
+
+[project.scripts]
+app = "expensemgr.main:app"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
