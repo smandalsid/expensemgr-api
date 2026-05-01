@@ -13,11 +13,11 @@ def test_authenticate_user(db, test_user):
     assert bcrypt_context.verify('password', user.password)
 
 def test_create_access_token(db):
-    token = AuthService(db).create_access_token(username='username', user_id=1, is_admin = False, expires_delta=timedelta(minutes=30))
+    token = AuthService(db).create_access_token(username='username', user_key=1, is_admin = False, expires_delta=timedelta(minutes=30))
     decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={'verify_signature':False})
 
     assert decoded_token['sub'] == 'username'
-    assert decoded_token['id'] == 1
+    assert decoded_token['user_key'] == 1
     assert decoded_token['is_admin'] == False
 
 def test_login_for_access_token(test_user, client):

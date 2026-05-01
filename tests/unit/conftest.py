@@ -74,7 +74,7 @@ def test_user(db):
 @pytest.fixture(scope="module")
 def regular_user(db, test_user, client: TestClient):
     user : User = test_user
-    access_token: str = AuthService(db).create_access_token(user.username, user.user_id, user.is_admin, timedelta(30))
+    access_token: str = AuthService(db).create_access_token(user.username, user.user_key, user.is_admin, timedelta(30))
     headers = {'Authorization' : f"Bearer {access_token}"}
     client.headers.update(headers)
     yield user
@@ -83,7 +83,7 @@ def regular_user(db, test_user, client: TestClient):
 @pytest.fixture(scope="module")
 def admin_user(db, test_user, client: TestClient):
     user : User = test_user
-    access_token: str = AuthService(db).create_access_token(user.username, user.user_id, True, timedelta(30))
+    access_token: str = AuthService(db).create_access_token(user.username, user.user_key, True, timedelta(30))
     headers = {'Authorization' : f"Bearer {access_token}"}
     client.headers.update(headers)
     yield user
@@ -93,14 +93,16 @@ def admin_user(db, test_user, client: TestClient):
 def currency(db, admin_user: User):
     test_currency = [
         Currency(
-            created_by = admin_user.user_id,
-            abbr = "TESTCUR1",
-            desc = "Test Currency 1"
+            meta_changed_by = admin_user.user_key,
+            currency_code = "TESTCUR1",
+            currency_desc = "Test Currency 1",
+            currency_name = "Test name 1"
         ),
         Currency(
-            created_by = admin_user.user_id,
-            abbr = "TESTCUR2",
-            desc = "Test Currency 2"
+            meta_changed_by = admin_user.user_key,
+            currency_code = "TESTCUR2",
+            currency_desc = "Test Currency 2",
+            currency_name = "Test name 2"
         )
     ]
     db.add_all(test_currency)

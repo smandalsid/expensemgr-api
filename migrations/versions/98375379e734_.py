@@ -1,8 +1,8 @@
-"""first_revision
+"""empty message
 
-Revision ID: e1ea376d9d48
+Revision ID: 98375379e734
 Revises: 
-Create Date: 2025-11-02 15:34:20.442750
+Create Date: 2026-04-30 23:46:25.510038
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'e1ea376d9d48'
+revision: str = '98375379e734'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -34,9 +34,10 @@ def upgrade() -> None:
     op.create_index(op.f('ix_money_schema_currency_currency_key'), 'currency', ['currency_key'], unique=False, schema='money_schema')
     op.create_table('division_by',
     sa.Column('division_by_key', sa.Integer(), nullable=False),
-    sa.Column('division_by_type', sa.String(length=10), nullable=False),
+    sa.Column('division_by_code', sa.String(length=10), nullable=False),
     sa.Column('division_by_type_desc', sa.String(length=100), nullable=False),
     sa.PrimaryKeyConstraint('division_by_key', name='division_by_pk'),
+    sa.UniqueConstraint('division_by_code'),
     schema='money_schema'
     )
     op.create_table('user',
@@ -50,7 +51,6 @@ def upgrade() -> None:
     sa.Column('is_admin', sa.Boolean(), server_default='FALSE', nullable=True),
     sa.Column('last_login', sa.DateTime(), nullable=True),
     sa.Column('meta_changed_dttm', sa.DateTime(), nullable=True),
-    sa.Column('meta_changed_by', sa.Integer(), nullable=False),
     sa.Column('user_active_ind', sa.Boolean(), server_default='TRUE', nullable=True),
     sa.PrimaryKeyConstraint('user_key', name='user_pk'),
     schema='user_schema'
@@ -66,12 +66,15 @@ def upgrade() -> None:
     sa.Column('total_amount', sa.Float(), nullable=False),
     sa.Column('expense_desc', sa.String(length=255), nullable=True),
     sa.Column('meta_changed_dttm', sa.DateTime(), nullable=True),
-    sa.Column('meta_changed_by', sa.Integer(), nullable=True),
+    sa.Column('meta_changed_by', sa.Integer(), nullable=False),
     sa.Column('expense_status', sa.Boolean(), nullable=False),
+    sa.Column('delete_ind', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['currency_key'], ['money_schema.currency.currency_key'], ),
     sa.ForeignKeyConstraint(['currency_key'], ['money_schema.currency.currency_key'], name='expense_fk02'),
     sa.ForeignKeyConstraint(['division_by_key'], ['money_schema.division_by.division_by_key'], ),
     sa.ForeignKeyConstraint(['division_by_key'], ['money_schema.division_by.division_by_key'], name='expense_fk03'),
+    sa.ForeignKeyConstraint(['meta_changed_by'], ['user_schema.user.user_key'], ),
+    sa.ForeignKeyConstraint(['meta_changed_by'], ['user_schema.user.user_key'], name='expense_fk04'),
     sa.ForeignKeyConstraint(['primary_user_key'], ['user_schema.user.user_key'], ),
     sa.ForeignKeyConstraint(['primary_user_key'], ['user_schema.user.user_key'], name='expense_fk01'),
     sa.PrimaryKeyConstraint('expense_key', name='expense_pk'),
@@ -85,8 +88,15 @@ def upgrade() -> None:
     sa.Column('secondary_user_key', sa.Integer(), nullable=False),
     sa.Column('expense_share', sa.Float(), nullable=False),
     sa.Column('expense_ver_status', sa.Boolean(), nullable=False),
+    sa.Column('version_effective_dttm', sa.DateTime(), nullable=False),
+    sa.Column('version_termination_dttm', sa.DateTime(), nullable=True),
+    sa.Column('version_active_ind', sa.Boolean(), nullable=False),
+    sa.Column('meta_changed_dttm', sa.DateTime(), nullable=False),
+    sa.Column('meta_changed_by', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['expense_key'], ['money_schema.expense.expense_key'], ),
     sa.ForeignKeyConstraint(['expense_key'], ['money_schema.expense.expense_key'], name='expense_ver_fk01'),
+    sa.ForeignKeyConstraint(['meta_changed_by'], ['user_schema.user.user_key'], ),
+    sa.ForeignKeyConstraint(['meta_changed_by'], ['user_schema.user.user_key'], name='expense_ver_fk03'),
     sa.ForeignKeyConstraint(['primary_user_key'], ['user_schema.user.user_key'], ),
     sa.ForeignKeyConstraint(['primary_user_key'], ['user_schema.user.user_key'], name='expense_ver_fk02'),
     sa.PrimaryKeyConstraint('expense_ver_key', name='expense_ver_pk'),

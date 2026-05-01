@@ -20,7 +20,7 @@ def test_create_user(db, client):
     response = client.post(url='/auth/', json=request_data)
     assert response.status_code == status.HTTP_201_CREATED
 
-    model: User = db.query(User).filter(User.user_id == 1).first()
+    model: User = db.query(User).filter(User.user_key == 1).first()
     assert model.username == request_data.get('username')
     assert model.first_name == request_data.get('first_name')
     assert model.last_name == request_data.get('last_name')
