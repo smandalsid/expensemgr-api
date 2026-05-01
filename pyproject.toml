@@ -5,7 +5,7 @@ description = ""
 authors = ["smandalsid <smandal.sid@gmail.com>"]
 readme = "README.md"
 
-[project.scripts]
+[tool.poetry.scripts]
 app = "expensemgr.main:app"
 
 [tool.poetry.dependencies]
