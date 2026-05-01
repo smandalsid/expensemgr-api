@@ -5,6 +5,9 @@ description = ""
 authors = ["smandalsid <smandal.sid@gmail.com>"]
 readme = "README.md"
 
+[project.scripts]
+app = "expensemgr.main:app"
+
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = {extras = ["standard"], version = "^0.120.4"}
