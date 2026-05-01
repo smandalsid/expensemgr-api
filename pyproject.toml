@@ -9,7 +9,7 @@ readme = "README.md"
 app = "expensemgr.main:app"
 
 [project.scripts]
-app = "backend.server:app"
+app = "expensemgr.main:app"
 
 [tool.poetry.dependencies]
 python = "^3.12"
