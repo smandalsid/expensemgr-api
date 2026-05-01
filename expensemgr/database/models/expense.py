@@ -49,6 +49,11 @@ class Expense(Base):
             ["money_schema.division_by.division_by_key"],
             name="expense_fk03",
         ),
+        ForeignKeyConstraint(
+            ["meta_changed_by"],
+            ["user_schema.user.user_key"],
+            name="expense_fk04"
+        ),
         PrimaryKeyConstraint("expense_key", name="expense_pk"),
         {"schema": "money_schema"},
     )
@@ -66,7 +71,7 @@ class Expense(Base):
     total_amount = Column(Float, nullable=False)
     expense_desc = Column(String(255))
     meta_changed_dttm = Column(DateTime, default=func.now())
-    meta_changed_by = Column(Integer)
+    meta_changed_by = Column(Integer, ForeignKey("user_schema.user.user_key"), nullable=False)
     expense_status = Column(Boolean, default=False, nullable=False)
     delete_ind = Column(Boolean, default=False, nullable=False)
 
@@ -82,6 +87,11 @@ class ExpenseVer(Base):
         ),
         ForeignKeyConstraint(
             ["primary_user_key"], ["user_schema.user.user_key"], name="expense_ver_fk02"
+        ),
+        ForeignKeyConstraint(
+            ["meta_changed_by"],
+            ["user_schema.user.user_key"],
+            name="expense_ver_fk03"
         ),
         {"schema": "money_schema"},
     )
@@ -100,6 +110,7 @@ class ExpenseVer(Base):
     version_termination_dttm = Column(DateTime, default=None, nullable=True)
     version_active_ind = Column(Boolean, default=True, nullable=False)
     meta_changed_dttm = Column(DateTime, default=func.now(), nullable=False)
+    meta_changed_by = Column(Integer, ForeignKey("user_schema.user.user_key"), nullable=False)
 
 
 class DivisionBy(Base):

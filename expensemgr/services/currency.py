@@ -18,14 +18,14 @@ class CurrencyService:
     @expense_mgr_logger.wrapper_logger(log_args=True)
     def create_currency(self, currency: CurrencyBase) -> CurrencyBase:
         if self.db.fetch_one_record(
-            select(Currency).where(Currency.currency_code == currency.currency_code)
+            query=select(Currency).where(Currency.currency_code == currency.currency_code)
         ):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Currency code already exists!",
             )
         new_currency = self.db.execute_query(
-            insert(Currency).values(
+            query=insert(Currency).values(
                 currency_code=currency.currency_code,
                 currency_desc=currency.currency_desc,
                 currency_name=currency.currency_name,
@@ -34,7 +34,7 @@ class CurrencyService:
         )
 
         currency = self.db.fetch_one_record(
-            select(Currency).where(
+            query=select(Currency).where(
                 Currency.currency_key == new_currency.inserted_primary_key[0]
             )
         )
@@ -42,4 +42,4 @@ class CurrencyService:
 
     @expense_mgr_logger.wrapper_logger(log_args=True)
     def get_all_currency(self) -> List[CurrencyOut]:
-        return self.db.fetch_records(select(Currency))
+        return self.db.fetch_records(query=select(Currency))

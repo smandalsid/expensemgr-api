@@ -34,9 +34,13 @@ class BaseLogger:
                     if log_result:
                         self.logger.info(f"{func.__name__} returned - {result}")
                     end_time = datetime.now(timezone.utc)
-                    self.logger.info(
-                        f"{func.__name__} - Execution time: {end_time - start_time}"
-                    )
+                    query = kwargs.get("query", None)
+                    if query is not None:
+                        self.logger.info(
+                            f"{func.__name__} - Query [{str(query)[:100]}] execution time: {end_time - start_time}"
+                        )
+                    else:
+                        self.logger.info(f"{func.__name__} - Execution time: {end_time - start_time}")
                 except Exception as e:
                     self.logger.exception(
                         f"{func.__name__} - Exception occured: {str(e)}"
