@@ -8,6 +8,9 @@ readme = "README.md"
 [tool.poetry.scripts]
 app = "expensemgr.main:app"
 
+[project.scripts]
+app = "backend.server:app"
+
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = {extras = ["standard"], version = "^0.120.4"}
