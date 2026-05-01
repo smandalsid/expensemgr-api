@@ -49,17 +49,17 @@ class UserService:
             password=bcrypt_context.hash(create_user.password),
             phone_number=create_user.phone_number,
         )
-        result = self.db.execute_query(insert_user_stmt)
+        result = self.db.execute_query(query=insert_user_stmt)
 
         user = self.db.fetch_one_record(
-            select(User).where(User.user_key == result.inserted_primary_key[0])
+            query=select(User).where(User.user_key == result.inserted_primary_key[0])
         )
         return user
 
     @expense_mgr_logger.wrapper_logger(log_args=True)
     def get_user(self, user: user_dependency):
         user = self.db.fetch_one_record(
-            select(User).where(User.user_key == user.get("user_key"))
+            query=select(User).where(User.user_key == user.get("user_key"))
         )
         if user is not None:
             return user

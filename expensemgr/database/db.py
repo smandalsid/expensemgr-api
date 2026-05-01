@@ -8,8 +8,9 @@ from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from sqlalchemy.pool import QueuePool
 
-from expensemgr.utils.logger import expense_mgr_logger
-import asyncio
+from expensemgr.utils.logger import BaseLogger
+
+db_logger = BaseLogger(name="db_logger")
 
 # load env variables
 load_dotenv()
@@ -74,18 +75,21 @@ class DB:
         return instance._engine
 
     @classmethod
+    @db_logger.wrapper_logger()
     def fetch_one_record(cls, query):
         with cls._engine.connect() as conn:
             result = conn.execute(query).fetchone()
         return result
 
     @classmethod
+    @db_logger.wrapper_logger()
     def fetch_records(cls, query):
         with cls._engine.connect() as conn:
             results = conn.execute(query).fetchall()
         return results
 
     @classmethod
+    @db_logger.wrapper_logger()
     def execute_query(cls, query):
         with cls._engine.connect() as connection:
             with connection.begin() as transaction:

@@ -19,7 +19,7 @@ class AuthService:
 
     def authenticate_user(self, username: str, password: str) -> User:
         user: User = self.db.fetch_one_record(
-            select(User).where(User.username == username)
+            query=select(User).where(User.username == username)
         )
         if not user:
             return False
