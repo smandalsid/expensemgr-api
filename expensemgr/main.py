@@ -7,7 +7,7 @@ app = FastAPI(
     title="API of Expense Manager Application",
     summary="This API will give the complete functionality of an expense manager application with user management, admin functionality, creating currencies, adding. sharing and managing expenses",
     servers=[
-        {"url": "https://expense-mgr-fastapi-mssql-server-do.vercel.app", "description": "Prod Environment"},
+        {"url": "https://expensemgr-api.vercel.app/", "description": "Prod Environment"},
         {"url": "https://expensemgr-api-git-development-catalystmandal-1458s-projects.vercel.app", "description": "Preview Environment"},
         {"url": "http://127.0.0.1:8000", "description": "Local environment"},
     ],
