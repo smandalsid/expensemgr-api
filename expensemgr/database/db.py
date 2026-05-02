@@ -59,15 +59,12 @@ class DB:
 
     @classmethod
     def _initialise(cls):
-        if ENV == "dev":
-            cls._engine = create_engine(
-                SUPABASE_URL,
-                max_overflow=10,
-                pool_size=20,
-                # echo=True,echo_pool="debug"
-            )
-        elif ENV == "test":
-            cls._engine = create_engine(TEST_DATABASE_URL)
+        cls._engine = create_engine(
+            SUPABASE_URL,
+            max_overflow=10,
+            pool_size=20,
+            # echo=True,echo_pool="debug"
+        )
 
     @classmethod
     def get_engine(cls):
