@@ -4,7 +4,7 @@ from typing import List, Optional
 from expensemgr.database.db import db_dependency
 from expensemgr.routers.users import user_dependency
 from expensemgr.schemas.expense import CreateExpense, ExpenseOut, EditExpense
-from expensemgr.services.expense import ExpenseService, ExpenseCreationException, ExpenseNotFoundException, ExpenseEditException, ExpenseDeleteException
+from expensemgr.services.expense import ExpenseService, ExpenseCreationException, ExpenseNotFoundException, ExpenseEditException, ExpenseDeleteException, ExpenseSettleException
 from expensemgr.utils.constants import auth_failed
 from expensemgr.utils.logger import expense_mgr_logger
 
@@ -89,7 +89,14 @@ def delete_expense(db: db_dependency, user: user_dependency, expense_key: int):
     except ExpenseDeleteException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-@router.put("/settle", status_code=status.HTTP_200_OK, response_model=ExpenseOut)
+@router.put("/settle", status_code=status.HTTP_200_OK)
 @expense_mgr_logger.wrapper_logger(log_args=False)
-def settle_expense(db: db_dependency, user: user_dependency):
-    pass
+def settle_expense(db: db_dependency, user: user_dependency, expense_ver_key: int):
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=auth_failed
+        )
+    try:
+        return ExpenseService(db=db, user=user).settle_expense(expense_ver_key=expense_ver_key)
+    except ExpenseSettleException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
