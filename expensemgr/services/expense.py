@@ -386,3 +386,6 @@ class ExpenseService:
                 )
             )
         return {"detail": "Expense deleted!"}
+    
+    def settle_expense(self, expense_ver_key):
+        pass
