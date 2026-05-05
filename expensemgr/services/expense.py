@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from typing import List, Optional, Union
-from sqlalchemy import and_, insert, select, func, literal, update, Connection, true, case, exists
+from sqlalchemy import and_, or_, insert, select, func, literal, update, Connection, true, case, exists
 from sqlalchemy.dialects.postgresql import array
 from sqlalchemy.engine.cursor import CursorResult
 from sqlalchemy.orm import aliased
@@ -11,7 +11,7 @@ from expensemgr.database.models.expense import Expense, ExpenseVer, Currency, Di
 from expensemgr.database.models.users import User
 from expensemgr.routers.users import user_dependency
 from expensemgr.utils.logger import expense_mgr_logger
-from expensemgr.utils.constants import VersionActiveInd, DeleteInd, ExpenseVerStatus
+from expensemgr.utils.constants import VersionActiveInd, DeleteInd, ExpenseStatus
 
 
 class ExpenseCreationException(Exception):
@@ -27,6 +27,8 @@ class ExpenseEditException(Exception):
 class ExpenseDeleteException(Exception):
     pass
 
+class ExpenseSettleException(Exception):
+    pass
 
 class ExpenseService:
     def __init__(self, db: db_dependency, user: user_dependency):
@@ -62,8 +64,11 @@ class ExpenseService:
                 ExpenseVer,
                 and_(
                     Expense.expense_key == ExpenseVer.expense_key,
-                    and_(Expense.delete_ind == DeleteInd.NO.value,
-                    ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value) if get_active else true()
+                    and_(
+                        Expense.expense_status == ExpenseStatus.DUE.value,
+                        Expense.delete_ind == DeleteInd.NO.value,
+                        ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value,
+                    ) if get_active else true()
                 ),
             )
             .join(u1, Expense.primary_user_key == u1.user_key)
@@ -203,10 +208,11 @@ class ExpenseService:
 
     @expense_mgr_logger.wrapper_logger(log_args=True)
     def get_active_expenses(self) -> Optional[List[ExpenseOut]]:
+        user_key = self.user.get("user_key")
         expense_keys_cte = (
             select(ExpenseVer.expense_key)
             .where(
-                ExpenseVer.secondary_user_key == self.user.get("user_key"),
+                ExpenseVer.secondary_user_key == user_key,
                 ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value
             )
             .distinct()
@@ -386,3 +392,95 @@ class ExpenseService:
                 )
             )
         return {"detail": "Expense deleted!"}
+    
+    def settle_expense(self, expense_ver_key):
+        engine = self.db.get_engine()
+        with engine.begin() as conn:
+            user_key = self.user.get('user_key')
+            is_expense_ver_key_valid = conn.execute(
+                statement=select(case(
+                    (~exists(select(1).where(ExpenseVer.expense_ver_key == expense_ver_key)), 'absent'),
+                    (exists(select(1).where(
+                        ExpenseVer.expense_ver_key == expense_ver_key,
+                        or_(
+                            ExpenseVer.version_active_ind == VersionActiveInd.INACTIVE.value,
+                            ExpenseVer.expense_ver_status == ExpenseStatus.SETTLED.value
+                        )
+                    )), 'settled'),
+                    else_='present'
+                ))
+            ).scalar()
+
+            if is_expense_ver_key_valid == 'absent':
+                raise ExpenseSettleException('You are trying to settle an invalid expense!')
+            elif is_expense_ver_key_valid=='settled':
+                raise ExpenseSettleException('Expense already deleted or settled!')
+
+            is_user_eligible = conn.execute(
+                statement=select(
+                    select(1)
+                    .where(
+                        ExpenseVer.expense_ver_key == expense_ver_key,
+                        or_(
+                            ExpenseVer.primary_user_key == user_key,
+                            ExpenseVer.secondary_user_key == user_key
+                        )
+                    )
+                    .exists()
+                )
+            ).scalar()
+
+            if not is_user_eligible:
+                raise ExpenseSettleException('Not your expense to settle!')
+
+            now = datetime.now(timezone.utc)
+            expense_key = conn.execute(
+                statement=update(
+                    ExpenseVer
+                )
+                .where(
+                    ExpenseVer.expense_ver_key == expense_ver_key,
+                    ExpenseVer.expense_ver_status == ExpenseStatus.DUE.value,
+                    ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value
+                )
+                .values(
+                    expense_ver_status = ExpenseStatus.SETTLED.value,
+                    meta_changed_dttm = now,
+                    meta_changed_by = user_key
+                )
+                .returning(
+                    ExpenseVer.expense_key.label("expense_key")
+                )
+            ).scalar()
+
+            status_counts = dict(conn.execute(
+                statement=select(
+                    ExpenseVer.expense_ver_status.label("expense_ver_status"),
+                    func.count(ExpenseVer.expense_ver_status).label("count")
+                )
+                .where(
+                    ExpenseVer.expense_key == expense_key
+                )
+                .group_by(
+                    ExpenseVer.expense_ver_status
+                )
+            ).all())
+
+            result = conn.execute(
+                statement=update(
+                    Expense
+                )
+                .where(
+                    Expense.expense_key == expense_key,
+                    Expense.delete_ind == DeleteInd.NO.value
+                )
+                .values(
+                    meta_changed_dttm = now,
+                    meta_changed_by = user_key,
+                    expense_status = ExpenseStatus.SETTLED.value if not status_counts.get(False) else None
+                )
+            ).rowcount
+
+            if result>0:
+                return {"detail": "Expense settled!"}
+        return {"detail": "Expense not settled for some uncaught reason!"}

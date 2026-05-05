@@ -10,7 +10,9 @@ from expensemgr.database.db import db_dependency
 from expensemgr.database.models.users import User
 from expensemgr.services.utils import ALGORITHM, SECRET_KEY
 
-from .utils import bcrypt_context
+from expensemgr.services.utils import bcrypt_context
+from expensemgr.utils.constants import VersionActiveInd
+from expensemgr.utils.secrets import ENV
 
 
 class AuthService:
@@ -19,7 +21,10 @@ class AuthService:
 
     def authenticate_user(self, username: str, password: str) -> User:
         user: User = self.db.fetch_one_record(
-            query=select(User).where(User.username == username)
+            query=select(User).where(
+                User.username == username,
+                User.user_active_ind == VersionActiveInd.ACTIVE.value
+            )
         )
         if not user:
             return False
@@ -30,7 +35,7 @@ class AuthService:
     def create_access_token(
         self, username: str, user_key: int, is_admin: bool, expires_delta: timedelta
     ):
-        encode = {"sub": username, "user_key": user_key, "is_admin": is_admin}
+        encode = {"sub": username, "user_key": user_key, "is_admin": is_admin, "env": ENV}
         expires = datetime.now(timezone.utc) + expires_delta
         encode.update({"exp": expires})
         return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -43,6 +48,14 @@ class AuthService:
             username: str = payload.get("sub")
             user_key: int = payload.get("user_key")
             is_admin: str = payload.get("is_admin")
+            env: str = payload.get("env")
+
+            if env!=ENV:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Could not validate credentials"
+                )
+
             if username is None or user_key is None:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
