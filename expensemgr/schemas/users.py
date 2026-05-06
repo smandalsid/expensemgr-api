@@ -33,4 +33,5 @@ class CreateUser(UserBase):
 
 # class for output
 class UserOut(UserBase):
+    user_key: int
     is_admin: bool

@@ -4,11 +4,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from ..database.db import db_dependency
-from ..schemas.auth import Token
-from ..schemas.users import CreateUser, UserOut
-from ..services.auth import AuthService
-from ..services.users import *
+from expensemgr.database.db import db_dependency
+from expensemgr.schemas.auth import Token
+from expensemgr.schemas.users import CreateUser, UserOut
+from expensemgr.services.auth import AuthService
+from expensemgr.services.users import *
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
