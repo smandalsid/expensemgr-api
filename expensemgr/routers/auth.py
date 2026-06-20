@@ -13,7 +13,7 @@ from expensemgr.services.users import *
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserOut)
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=UserOut)
 async def create_user(db: db_dependency, create_user: CreateUser):
     service = UserService(db=db)
     return service.create_user(create_user=create_user)
