@@ -4,16 +4,16 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from ..database.db import db_dependency
-from ..schemas.auth import Token
-from ..schemas.users import CreateUser, UserOut
-from ..services.auth import AuthService
-from ..services.users import *
+from expensemgr.database.db import db_dependency
+from expensemgr.schemas.auth import Token
+from expensemgr.schemas.users import CreateUser, UserOut
+from expensemgr.services.auth import AuthService
+from expensemgr.services.users import *
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserOut)
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=UserOut)
 async def create_user(db: db_dependency, create_user: CreateUser):
     service = UserService(db=db)
     return service.create_user(create_user=create_user)

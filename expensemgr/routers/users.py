@@ -17,7 +17,7 @@ router = APIRouter(
 user_dependency = Annotated[dict, Depends(AuthService.get_current_user)]
 
 
-@router.get("/", status_code=status.HTTP_200_OK, response_model=UserOut)
+@router.get("", status_code=status.HTTP_200_OK, response_model=UserOut)
 @expense_mgr_logger.wrapper_logger()
 def get_user(user: user_dependency, db: db_dependency):
     if user is None:

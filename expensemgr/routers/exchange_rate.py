@@ -10,7 +10,7 @@ from expensemgr.schemas.exchange_rate import ExchangeRateOut
 router = APIRouter(prefix="/exchange_rate", tags=["exchange_rate"])
 
 
-@router.get("/{code}", status_code=status.HTTP_200_OK, response_model=ExchangeRateOut)
+@router.get("/", status_code=status.HTTP_200_OK, response_model=ExchangeRateOut)
 @expense_mgr_logger.wrapper_logger(log_args=True)
 def get_exchange_rate_multiplier(
     db: db_dependency,

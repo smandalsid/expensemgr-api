@@ -63,3 +63,7 @@ def get_redis_dependency() -> Generator["RedisStore", None, None]:
 
 
 redis_dependency = Annotated[CacheStore, Depends(get_redis_dependency)]
+
+# To update redis cache
+# instance = RedisStore.get_instance()
+# instance.set()
