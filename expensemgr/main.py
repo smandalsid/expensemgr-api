@@ -16,7 +16,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://expensemgr-ui.vercel.app"],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["Authorization", "Content-Type", "x-vercel-protection-bypass"],
 )
