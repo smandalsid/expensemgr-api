@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from expensemgr.database.db import Base, DB
 from expensemgr.routers import auth, currency, expense, users, exchange_rate
@@ -13,9 +14,12 @@ app = FastAPI(
     ],
 )
 
-engine = DB.get_engine()
-# Base.metadata.create_all(bind=engine)
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://expensemgr-ui.vercel.app"],
+    allow_methods=["*"],
+    allow_headers=["Authorization", "Content-Type", "x-vercel-protection-bypass"],
+)
 
 @app.get("/health")
 async def get_health_check():
