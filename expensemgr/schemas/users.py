@@ -6,6 +6,8 @@ from pydantic import BaseModel, EmailStr, field_validator
 # base class for user
 class UserBase(BaseModel):
     username: str
+
+class UserEnriched(UserBase):
     first_name: str
     last_name: str
     email: EmailStr
@@ -13,7 +15,7 @@ class UserBase(BaseModel):
 
 
 # class to take input while creating user
-class CreateUser(UserBase):
+class CreateUser(UserEnriched):
     password: str
     retyped_password: str
 
@@ -30,8 +32,7 @@ class CreateUser(UserBase):
             raise ValueError("Phone number is not valid")
         return value
 
-
 # class for output
-class UserOut(UserBase):
+class UserOut(UserEnriched):
     user_key: int
     is_admin: bool

@@ -28,9 +28,11 @@ class Currency(Base):
     currency_name = Column(String(100), nullable=False)
     currency_desc = Column(String(255), nullable=False)
     meta_changed_dttm = Column(DateTime, default=func.now())
-    meta_changed_by = Column(
-        Integer, nullable=False
-    )  # dont want to create a foreign key yet as dont want to manage any specific deletions if the user gets deleted
+    meta_changed_by = Column(Integer, ForeignKey("user_schema.user.user_key"), nullable=False)
+    delete_ind = Column(Boolean, default=False, nullable=False)
+    version_active_ind = Column(Boolean, default=True, nullable=False)
+    version_effective_dttm = Column(DateTime, default=func.now(), nullable=False)
+    version_termination_dttm = Column(DateTime, default=None)
 
 
 class Expense(Base):
@@ -120,6 +122,8 @@ class DivisionBy(Base):
         {"schema": "money_schema"},
     )
 
-    division_by_key = Column(Integer, primary_key=True)
+    division_by_key = Column(Integer, primary_key=True, index=True)
     division_by_code = Column(String(10), nullable=False, unique=True)
     division_by_type_desc = Column(String(100), nullable=False)
+    delete_ind = Column(Boolean, default=False, nullable=False)
+    version_active_ind = Column(Boolean, default=True, nullable=False)

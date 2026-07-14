@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, List
 
 from fastapi import Depends, HTTPException, status
 from sqlalchemy import insert, select, update
@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from expensemgr.database.db import db_dependency
 from expensemgr.database.models.users import User
-from expensemgr.schemas.users import CreateUser, UserOut
+from expensemgr.schemas.users import CreateUser, UserOut, UserBase
 from expensemgr.services.auth import AuthService
 from expensemgr.services.utils import bcrypt_context
 from expensemgr.utils.logger import expense_mgr_logger
@@ -99,3 +99,19 @@ class UserService:
         if udpated:
             return {'detail': 'Password changed!'}
         return {'detail': 'Password change failed for some reason!'}
+    
+    @expense_mgr_logger.wrapper_logger()
+    def get_all(
+        self
+    ) -> List[UserBase]:
+        query = select(
+            User.user_key.label("user_key"),
+            User.username.label("username")
+        ).where(
+            User.user_active_ind == VersionActiveInd.ACTIVE.value
+        ).order_by(
+            User.first_name.asc(),
+            User.last_name.asc()
+        )
+
+        return self.db.fetch_records(query=query)

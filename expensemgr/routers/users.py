@@ -1,9 +1,9 @@
-from typing import Annotated
+from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from expensemgr.database.db import db_dependency
-from expensemgr.schemas.users import UserOut
+from expensemgr.schemas.users import UserOut, UserBase
 from expensemgr.services.auth import AuthService
 from expensemgr.services.users import UserService
 from expensemgr.utils.constants import auth_failed
@@ -54,3 +54,15 @@ def change_password(user: user_dependency, db: db_dependency, old_password: str,
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
+
+@router.get("/get_all", status_code=status.HTTP_200_OK, response_model=List[UserBase])
+@expense_mgr_logger.wrapper_logger()
+def get_all(user: user_dependency, db: db_dependency):
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=auth_failed
+        )
+    
+    service = UserService(db=db)
+    user_list = service.get_all()
+    return user_list

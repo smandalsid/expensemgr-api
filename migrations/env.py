@@ -74,7 +74,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    if ENV == "dev":
+    if ENV == "preview":
         connectable = create_engine(SUPABASE_DIRECT_URL, poolclass=pool.NullPool)
     elif ENV == "test":
         connectable = create_engine(TEST_DATABASE_URL, poolclass=pool.NullPool)
