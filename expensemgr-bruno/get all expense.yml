@@ -1,0 +1,17 @@
+info:
+  name: get all expense
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://127.0.0.1:8000/expense/get_all
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzdHJpbmcxIiwidXNlcl9rZXkiOjEsImlzX2FkbWluIjp0cnVlLCJleHAiOjE3Nzc5MDM5MzF9.UxvC4pB0SyK4QFYtMxl6xIFRYqlEZ1Im5fU8AU-QiOA
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

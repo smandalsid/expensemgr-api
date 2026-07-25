@@ -1,0 +1,17 @@
+info:
+  name: get active expenses
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: https://expensemgr-api-git-development-catalystmandal-1458s-projects.vercel.app/users/
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzdHJpbmcxIiwidXNlcl9rZXkiOjEsImlzX2FkbWluIjp0cnVlLCJleHAiOjE3Nzc5MDY2MjZ9.YwCRTg-VCMLa6vnT4teJAQFm1errDxj277HDm427R6c
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

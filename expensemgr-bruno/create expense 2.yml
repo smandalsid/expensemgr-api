@@ -1,0 +1,37 @@
+info:
+  name: create expense 2
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: http://127.0.0.1:8000/expense/create
+  body:
+    type: json
+    data: |-
+      {
+          "primary_user_key": 2,
+          "currency_key": 74,
+          "division_by_key": 1,
+          "total_amount": 100,
+          "expense_desc": "Second Expense",
+          "user_expense_secondary_share": [
+              {
+                  "user_key": 3,
+                  "user_share": 50
+              },
+              {
+                  "user_key": 2,
+                  "user_share": 50
+              }
+          ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzdHJpbmcyIiwidXNlcl9rZXkiOjIsImlzX2FkbWluIjpmYWxzZSwiZXhwIjoxNzc3ODc3NTU5fQ.X-h2rr2l0APY0LmsEXcaizHe5EuYaWypdO6tNBvgGLk
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

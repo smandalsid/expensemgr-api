@@ -1,0 +1,21 @@
+info:
+  name: Settle expense
+  type: http
+  seq: 11
+
+http:
+  method: PUT
+  url: http://127.0.0.1:8000/expense/settle?expense_ver_key=96
+  params:
+    - name: expense_ver_key
+      value: "96"
+      type: query
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzdHJpbmcxIiwidXNlcl9rZXkiOjEsImlzX2FkbWluIjp0cnVlLCJleHAiOjE3Nzc5MDA1ODV9.qwfgC-HXTXxlMS-uU4vt9FQ_hDSi0BLVRtuLyTf1W48
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

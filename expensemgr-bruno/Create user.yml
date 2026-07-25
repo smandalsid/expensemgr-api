@@ -1,0 +1,27 @@
+info:
+  name: Create user
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: http://127.0.0.1:8000/auth
+  body:
+    type: json
+    data: |-
+      {
+        "username": "string3",
+        "first_name": "string3",
+        "last_name": "string3",
+        "email": "user3@example.com",
+        "phone_number": "9833333376",
+        "password": "string3",
+        "retyped_password": "string3"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
