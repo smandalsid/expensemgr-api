@@ -7,8 +7,7 @@ from alembic import context
 # from expensemgr.database.models.users import Base as usersBase
 # from expensemgr.database.models.expense import Base as expenseBase
 from expensemgr.database.db import TEST_DATABASE_URL, ENV, Base, SUPABASE_DIRECT_URL
-from expensemgr.database.models.expense import Expense, Currency
-from expensemgr.database.models.users import User
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

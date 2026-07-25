@@ -8,7 +8,7 @@ from expensemgr.database.db import db_dependency
 from expensemgr.schemas.auth import Token
 from expensemgr.schemas.users import CreateUser, UserOut
 from expensemgr.services.auth import AuthService
-from expensemgr.services.users import *
+from expensemgr.services.users import UserService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

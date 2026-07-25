@@ -1,12 +1,28 @@
 from datetime import datetime, timezone
 from typing import List, Optional, Union
-from sqlalchemy import and_, or_, insert, select, func, literal, update, Connection, true, case, exists
+from sqlalchemy import (
+    and_,
+    or_,
+    insert,
+    select,
+    func,
+    literal,
+    update,
+    Connection,
+    true,
+    case,
+    exists,
+)
 from sqlalchemy.dialects.postgresql import array
-from sqlalchemy.engine.cursor import CursorResult
 from sqlalchemy.orm import aliased
 
 from expensemgr.database.db import db_dependency
-from expensemgr.schemas.expense import CreateExpense, ExpenseOut, ExpenseShare, EditExpense
+from expensemgr.schemas.expense import (
+    CreateExpense,
+    ExpenseOut,
+    ExpenseShare,
+    EditExpense,
+)
 from expensemgr.database.models.expense import Expense, ExpenseVer, Currency, DivisionBy
 from expensemgr.database.models.users import User
 from expensemgr.routers.users import user_dependency
@@ -21,21 +37,27 @@ class ExpenseCreationException(Exception):
 class ExpenseNotFoundException(Exception):
     pass
 
+
 class ExpenseEditException(Exception):
     pass
+
 
 class ExpenseDeleteException(Exception):
     pass
 
+
 class ExpenseSettleException(Exception):
     pass
+
 
 class ExpenseService:
     def __init__(self, db: db_dependency, user: user_dependency):
         self.db = db
         self.user = user
 
-    def _build_expense_query(self, expense_ver_condition, get_active: Optional[bool] = False):
+    def _build_expense_query(
+        self, expense_ver_condition, get_active: Optional[bool] = False
+    ):
         u1: User = aliased(User)
         u2: User = aliased(User)
         return (
@@ -57,7 +79,7 @@ class ExpenseService:
                 DivisionBy.division_by_code.label("division_by_code"),
                 ExpenseVer.expense_ver_status.label("expense_ver_status"),
                 Expense.meta_changed_dttm.label("meta_changed_dttm"),
-                ExpenseVer.version_active_ind.label("version_active_ind")
+                ExpenseVer.version_active_ind.label("version_active_ind"),
             )
             .select_from(Expense)
             .join(
@@ -68,7 +90,9 @@ class ExpenseService:
                         Expense.expense_status == ExpenseStatus.DUE.value,
                         Expense.delete_ind == DeleteInd.NO.value,
                         ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value,
-                    ) if get_active else true()
+                    )
+                    if get_active
+                    else true(),
                 ),
             )
             .join(u1, Expense.primary_user_key == u1.user_key)
@@ -96,14 +120,20 @@ class ExpenseService:
                     expense_ver_key=row.expense_ver_key,
                     expense_share=row.expense_share,
                     expense_ver_status=row.expense_ver_status,
-                    version_active_ind=row.version_active_ind
+                    version_active_ind=row.version_active_ind,
                 )
                 for row in rows
             ],
         )
 
     @expense_mgr_logger.wrapper_logger(log_args=True)
-    def create_expense_ver(self, expense: Union[CreateExpense, EditExpense], expense_key: int, now: datetime, conn: Connection):
+    def create_expense_ver(
+        self,
+        expense: Union[CreateExpense, EditExpense],
+        expense_key: int,
+        now: datetime,
+        conn: Connection,
+    ):
         rows = [
             {
                 "expense_key": expense_key,
@@ -113,7 +143,7 @@ class ExpenseService:
                 "expense_ver_status": expense.primary_user_key == entry.user_key,
                 "version_effective_dttm": now,
                 "meta_changed_dttm": now,
-                "meta_changed_by": self.user.get("user_key")
+                "meta_changed_by": self.user.get("user_key"),
             }
             for entry in expense.user_expense_secondary_share
         ]
@@ -125,23 +155,29 @@ class ExpenseService:
             engine = self.db.get_engine()
             with engine.begin() as conn:
                 user_key = self.user.get("user_key")
-                secondary_share_user_keys = {share.user_key for share in expense.user_expense_secondary_share}
+                secondary_share_user_keys = {
+                    share.user_key for share in expense.user_expense_secondary_share
+                }
                 if user_key not in secondary_share_user_keys:
-                    raise ExpenseCreationException("Cannot create expense where you are not included!")
-                
+                    raise ExpenseCreationException(
+                        "Cannot create expense where you are not included!"
+                    )
+
                 missing_keys = conn.execute(
                     statement=select(
-                        func.unnest(array(secondary_share_user_keys)).label("missing_keys")
-                    )
-                    .except_(
-                        select(User.user_key)
-                    )
+                        func.unnest(array(secondary_share_user_keys)).label(
+                            "missing_keys"
+                        )
+                    ).except_(select(User.user_key))
                 ).all()
                 if missing_keys:
                     raise ExpenseCreationException("Not all user keys are valid!")
 
                 self_expense = False
-                if len(expense.user_expense_secondary_share) == 1 and user_key == expense.user_expense_secondary_share[0].user_key:
+                if (
+                    len(expense.user_expense_secondary_share) == 1
+                    and user_key == expense.user_expense_secondary_share[0].user_key
+                ):
                     self_expense = True
 
                 now = datetime.now(timezone.utc)
@@ -161,19 +197,17 @@ class ExpenseService:
                     expense=expense,
                     expense_key=new_expense.inserted_primary_key[0],
                     now=now,
-                    conn=conn
+                    conn=conn,
                 )
-                statement=self._build_expense_query(
-                        Expense.expense_key == new_expense.inserted_primary_key[0]
-                    )
-                expense_outs = conn.execute(
-                    statement=statement
-                ).fetchall()
+                statement = self._build_expense_query(
+                    Expense.expense_key == new_expense.inserted_primary_key[0]
+                )
+                expense_outs = conn.execute(statement=statement).fetchall()
                 if expense_outs:
                     return self._rows_to_expense_out(expense_outs)
                 else:
                     expense_mgr_logger.get_logger().exception("Error creating expense!")
-                    raise ExpenseCreationException('Error creating expense!')
+                    raise ExpenseCreationException("Error creating expense!")
 
         except ExpenseCreationException as e:
             expense_mgr_logger.get_logger().exception(f"Error creating expense! {e}")
@@ -213,7 +247,7 @@ class ExpenseService:
             select(ExpenseVer.expense_key)
             .where(
                 ExpenseVer.secondary_user_key == user_key,
-                ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value
+                ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value,
             )
             .distinct()
             .cte("expense_keys")
@@ -221,8 +255,10 @@ class ExpenseService:
 
         expense_outs = self.db.fetch_records(
             query=self._build_expense_query(
-                expense_ver_condition=Expense.expense_key.in_(select(expense_keys_cte.c.expense_key)),
-                get_active=True
+                expense_ver_condition=Expense.expense_key.in_(
+                    select(expense_keys_cte.c.expense_key)
+                ),
+                get_active=True,
             )
         )
         if not expense_outs:
@@ -239,7 +275,7 @@ class ExpenseService:
             select(ExpenseVer.expense_key)
             .where(
                 ExpenseVer.secondary_user_key == self.user.get("user_key"),
-                ExpenseVer.expense_key == expense_key
+                ExpenseVer.expense_key == expense_key,
             )
             .distinct()
             .cte("expense_keys")
@@ -247,7 +283,9 @@ class ExpenseService:
 
         expense_outs = self.db.fetch_records(
             query=self._build_expense_query(
-                expense_ver_condition=Expense.expense_key.in_(select(expense_keys_cte.c.expense_key))
+                expense_ver_condition=Expense.expense_key.in_(
+                    select(expense_keys_cte.c.expense_key)
+                )
             )
         )
         if expense_outs:
@@ -258,7 +296,7 @@ class ExpenseService:
 
     @expense_mgr_logger.wrapper_logger(log_args=True)
     def edit_expense(self, expense: EditExpense) -> ExpenseOut:
-        user_key = self.user.get("user_key")        
+        user_key = self.user.get("user_key")
         now = datetime.now(timezone.utc)
         engine = self.db.get_engine()
         with engine.begin() as conn:
@@ -266,25 +304,26 @@ class ExpenseService:
                 select(1)
                 .where(
                     ExpenseVer.secondary_user_key == user_key,
-                    ExpenseVer.expense_key == expense.expense_key
-                ).exists()
+                    ExpenseVer.expense_key == expense.expense_key,
+                )
+                .exists()
             )
             if not conn.execute(statement=query).scalar():
-                raise ExpenseEditException("Cant edit an exception you are not part of!")
-            query = update(
-                Expense
-            )\
-            .where(
-                Expense.expense_key == expense.expense_key
-            )\
-            .values(
-                primary_user_key = expense.primary_user_key,
-                currency_key = expense.currency_key,
-                division_by_key = expense.division_by_key,
-                total_amount = expense.total_amount,
-                expense_desc = expense.expense_desc,
-                meta_changed_dttm = now,
-                meta_changed_by = user_key,
+                raise ExpenseEditException(
+                    "Cant edit an exception you are not part of!"
+                )
+            query = (
+                update(Expense)
+                .where(Expense.expense_key == expense.expense_key)
+                .values(
+                    primary_user_key=expense.primary_user_key,
+                    currency_key=expense.currency_key,
+                    division_by_key=expense.division_by_key,
+                    total_amount=expense.total_amount,
+                    expense_desc=expense.expense_desc,
+                    meta_changed_dttm=now,
+                    meta_changed_by=user_key,
+                )
             )
             conn.execute(statement=query)
 
@@ -292,7 +331,7 @@ class ExpenseService:
                 update(ExpenseVer)
                 .where(
                     ExpenseVer.expense_key == expense.expense_key,
-                    ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value
+                    ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value,
                 )
                 .values(
                     version_termination_dttm=now,
@@ -302,24 +341,19 @@ class ExpenseService:
                 )
             )
             self.create_expense_ver(
-                expense=expense,
-                expense_key=expense.expense_key,
-                now=now,
-                conn=conn
+                expense=expense, expense_key=expense.expense_key, now=now, conn=conn
             )
-            
-            statement=self._build_expense_query(
-                expense_ver_condition= Expense.expense_key == expense.expense_key,
-                get_active=True
+
+            statement = self._build_expense_query(
+                expense_ver_condition=Expense.expense_key == expense.expense_key,
+                get_active=True,
             )
-            expense_outs = conn.execute(
-                statement=statement
-            ).fetchall()
+            expense_outs = conn.execute(statement=statement).fetchall()
             if expense_outs:
                 return self._rows_to_expense_out(expense_outs)
             else:
                 expense_mgr_logger.get_logger().exception("Error editing expense!")
-                raise ExpenseCreationException('Error editing expense!')
+                raise ExpenseCreationException("Error editing expense!")
 
     @expense_mgr_logger.wrapper_logger()
     def delete_expense(self, expense_key):
@@ -329,44 +363,53 @@ class ExpenseService:
             expense_present_check = conn.execute(
                 statement=select(
                     case(
-                        (~exists(select(1).where(Expense.expense_key == expense_key)), 'absent'),
-                        (exists(select(1).where(Expense.expense_key == expense_key, Expense.delete_ind == DeleteInd.YES.value)), 'deleted'),
-                        else_='present'
+                        (
+                            ~exists(
+                                select(1).where(Expense.expense_key == expense_key)
+                            ),
+                            "absent",
+                        ),
+                        (
+                            exists(
+                                select(1).where(
+                                    Expense.expense_key == expense_key,
+                                    Expense.delete_ind == DeleteInd.YES.value,
+                                )
+                            ),
+                            "deleted",
+                        ),
+                        else_="present",
                     )
                 )
             ).scalar()
-            if expense_present_check == 'deleted':
+            if expense_present_check == "deleted":
                 raise ExpenseDeleteException("Expense already deleted!")
             elif expense_present_check == "absent":
                 raise ExpenseDeleteException("Expense not present!")
-            
+
             is_eligible_to_delete = conn.execute(
                 statement=select(
                     select(1)
                     .where(
                         ExpenseVer.expense_key == expense_key,
                         ExpenseVer.secondary_user_key == user_key,
-                        ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value
+                        ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value,
                     )
                     .exists()
                 )
             ).scalar()
             if not is_eligible_to_delete:
-                raise ExpenseDeleteException('Not your expense to delete!')
+                raise ExpenseDeleteException("Not your expense to delete!")
 
             now = datetime.now(timezone.utc)
             conn.execute(
-                statement=update(
-                    ExpenseVer
-                )
+                statement=update(ExpenseVer)
                 .where(
                     ExpenseVer.expense_ver_key.in_(
-                        select(
-                            ExpenseVer.expense_ver_key
-                        )
-                        .where(
+                        select(ExpenseVer.expense_ver_key).where(
                             ExpenseVer.expense_key == expense_key,
-                            ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value
+                            ExpenseVer.version_active_ind
+                            == VersionActiveInd.ACTIVE.value,
                         )
                     )
                 )
@@ -379,42 +422,56 @@ class ExpenseService:
             )
 
             conn.execute(
-                statement=update(
-                    Expense
-                )
-                .where(
-                    Expense.expense_key == expense_key
-                )
+                statement=update(Expense)
+                .where(Expense.expense_key == expense_key)
                 .values(
-                    meta_changed_dttm = now,
-                    meta_changed_by = user_key,
-                    delete_ind = DeleteInd.YES.value,
+                    meta_changed_dttm=now,
+                    meta_changed_by=user_key,
+                    delete_ind=DeleteInd.YES.value,
                 )
             )
         return {"detail": "Expense deleted!"}
-    
+
     def settle_expense(self, expense_ver_key):
         engine = self.db.get_engine()
         with engine.begin() as conn:
-            user_key = self.user.get('user_key')
+            user_key = self.user.get("user_key")
             is_expense_ver_key_valid = conn.execute(
-                statement=select(case(
-                    (~exists(select(1).where(ExpenseVer.expense_ver_key == expense_ver_key)), 'absent'),
-                    (exists(select(1).where(
-                        ExpenseVer.expense_ver_key == expense_ver_key,
-                        or_(
-                            ExpenseVer.version_active_ind == VersionActiveInd.INACTIVE.value,
-                            ExpenseVer.expense_ver_status == ExpenseStatus.SETTLED.value
-                        )
-                    )), 'settled'),
-                    else_='present'
-                ))
+                statement=select(
+                    case(
+                        (
+                            ~exists(
+                                select(1).where(
+                                    ExpenseVer.expense_ver_key == expense_ver_key
+                                )
+                            ),
+                            "absent",
+                        ),
+                        (
+                            exists(
+                                select(1).where(
+                                    ExpenseVer.expense_ver_key == expense_ver_key,
+                                    or_(
+                                        ExpenseVer.version_active_ind
+                                        == VersionActiveInd.INACTIVE.value,
+                                        ExpenseVer.expense_ver_status
+                                        == ExpenseStatus.SETTLED.value,
+                                    ),
+                                )
+                            ),
+                            "settled",
+                        ),
+                        else_="present",
+                    )
+                )
             ).scalar()
 
-            if is_expense_ver_key_valid == 'absent':
-                raise ExpenseSettleException('You are trying to settle an invalid expense!')
-            elif is_expense_ver_key_valid=='settled':
-                raise ExpenseSettleException('Expense already deleted or settled!')
+            if is_expense_ver_key_valid == "absent":
+                raise ExpenseSettleException(
+                    "You are trying to settle an invalid expense!"
+                )
+            elif is_expense_ver_key_valid == "settled":
+                raise ExpenseSettleException("Expense already deleted or settled!")
 
             is_user_eligible = conn.execute(
                 statement=select(
@@ -423,65 +480,59 @@ class ExpenseService:
                         ExpenseVer.expense_ver_key == expense_ver_key,
                         or_(
                             ExpenseVer.primary_user_key == user_key,
-                            ExpenseVer.secondary_user_key == user_key
-                        )
+                            ExpenseVer.secondary_user_key == user_key,
+                        ),
                     )
                     .exists()
                 )
             ).scalar()
 
             if not is_user_eligible:
-                raise ExpenseSettleException('Not your expense to settle!')
+                raise ExpenseSettleException("Not your expense to settle!")
 
             now = datetime.now(timezone.utc)
             expense_key = conn.execute(
-                statement=update(
-                    ExpenseVer
-                )
+                statement=update(ExpenseVer)
                 .where(
                     ExpenseVer.expense_ver_key == expense_ver_key,
                     ExpenseVer.expense_ver_status == ExpenseStatus.DUE.value,
-                    ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value
+                    ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value,
                 )
                 .values(
-                    expense_ver_status = ExpenseStatus.SETTLED.value,
-                    meta_changed_dttm = now,
-                    meta_changed_by = user_key
+                    expense_ver_status=ExpenseStatus.SETTLED.value,
+                    meta_changed_dttm=now,
+                    meta_changed_by=user_key,
                 )
-                .returning(
-                    ExpenseVer.expense_key.label("expense_key")
-                )
+                .returning(ExpenseVer.expense_key.label("expense_key"))
             ).scalar()
 
-            status_counts = dict(conn.execute(
-                statement=select(
-                    ExpenseVer.expense_ver_status.label("expense_ver_status"),
-                    func.count(ExpenseVer.expense_ver_status).label("count")
-                )
-                .where(
-                    ExpenseVer.expense_key == expense_key
-                )
-                .group_by(
-                    ExpenseVer.expense_ver_status
-                )
-            ).all())
+            status_counts = dict(
+                conn.execute(
+                    statement=select(
+                        ExpenseVer.expense_ver_status.label("expense_ver_status"),
+                        func.count(ExpenseVer.expense_ver_status).label("count"),
+                    )
+                    .where(ExpenseVer.expense_key == expense_key)
+                    .group_by(ExpenseVer.expense_ver_status)
+                ).all()
+            )
 
             result = conn.execute(
-                statement=update(
-                    Expense
-                )
+                statement=update(Expense)
                 .where(
                     Expense.expense_key == expense_key,
                     Expense.delete_ind == DeleteInd.NO.value,
-                    Expense.expense_status == ExpenseStatus.DUE.value
+                    Expense.expense_status == ExpenseStatus.DUE.value,
                 )
                 .values(
-                    meta_changed_dttm = now,
-                    meta_changed_by = user_key,
-                    expense_status = ExpenseStatus.SETTLED.value if not status_counts.get(False) else ExpenseStatus.DUE.value
+                    meta_changed_dttm=now,
+                    meta_changed_by=user_key,
+                    expense_status=ExpenseStatus.SETTLED.value
+                    if not status_counts.get(False)
+                    else ExpenseStatus.DUE.value,
                 )
             ).rowcount
 
-            if result>0:
+            if result > 0:
                 return {"detail": "Expense settled!"}
         return {"detail": "Expense not settled for some uncaught reason!"}

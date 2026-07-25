@@ -5,10 +5,9 @@ from dotenv import load_dotenv
 from fastapi import Depends
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.engine import URL
-from sqlalchemy.orm import Session, declarative_base, sessionmaker
-from sqlalchemy.pool import QueuePool
+from sqlalchemy.orm import declarative_base
 
-from expensemgr.utils.logger import BaseLogger
+from expensemgr.utils.logger import BaseLogger, expense_mgr_logger
 
 db_logger = BaseLogger(name="db_logger")
 

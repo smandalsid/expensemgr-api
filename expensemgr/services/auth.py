@@ -23,7 +23,7 @@ class AuthService:
         user: User = self.db.fetch_one_record(
             query=select(User).where(
                 User.username == username,
-                User.user_active_ind == VersionActiveInd.ACTIVE.value
+                User.user_active_ind == VersionActiveInd.ACTIVE.value,
             )
         )
         if not user:
@@ -35,7 +35,12 @@ class AuthService:
     def create_access_token(
         self, username: str, user_key: int, is_admin: bool, expires_delta: timedelta
     ):
-        encode = {"sub": username, "user_key": user_key, "is_admin": is_admin, "env": ENV}
+        encode = {
+            "sub": username,
+            "user_key": user_key,
+            "is_admin": is_admin,
+            "env": ENV,
+        }
         expires = datetime.now(timezone.utc) + expires_delta
         encode.update({"exp": expires})
         return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -50,10 +55,10 @@ class AuthService:
             is_admin: str = payload.get("is_admin")
             env: str = payload.get("env")
 
-            if env!=ENV:
+            if env != ENV:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Could not validate credentials"
+                    detail="Could not validate credentials",
                 )
 
             if username is None or user_key is None:
@@ -67,8 +72,8 @@ class AuthService:
                     "user_key": user_key,
                     "is_admin": is_admin,
                 }
-        except:
+        except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate credentials",
+                detail=f"Could not validate credentials - {e}",
             )
