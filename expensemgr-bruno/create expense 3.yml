@@ -1,7 +1,7 @@
 info:
-  name: create expense 1
+  name: create expense 3
   type: http
-  seq: 9
+  seq: 17
 
 http:
   method: POST
@@ -10,29 +10,28 @@ http:
     type: json
     data: |-
       {
-          "primary_user_key": 1,
+          "primary_user_key": 2,
           "currency_key": 74,
           "division_by_key": 1,
-          "total_amount": 1000,
-          "expense_desc": "First Expense",
+          "total_amount": 100,
+          "expense_desc": "Second Expense",
           "user_expense_secondary_share": [
               {
-                  "user_key": 1,
-                  "user_share": 500
+                  "user_key": 3,
+                  "user_share": 50
               },
               {
                   "user_key": 2,
-                  "user_share": 500
+                  "user_share": 50
               }
           ]
       }
   auth:
     type: bearer
-    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzdHJpbmcxIiwidXNlcl9rZXkiOjEsImlzX2FkbWluIjp0cnVlLCJleHAiOjE3Nzc2OTg3MDF9.4pr8NmEyFz6LatYkmURWGfQbjw9Dc8jP6kS-QEfTj_U
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzdHJpbmcyIiwidXNlcl9rZXkiOjIsImlzX2FkbWluIjpmYWxzZSwiZXhwIjoxNzc3ODc3NTU5fQ.X-h2rr2l0APY0LmsEXcaizHe5EuYaWypdO6tNBvgGLk
 
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-​

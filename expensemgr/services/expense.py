@@ -472,12 +472,13 @@ class ExpenseService:
                 )
                 .where(
                     Expense.expense_key == expense_key,
-                    Expense.delete_ind == DeleteInd.NO.value
+                    Expense.delete_ind == DeleteInd.NO.value,
+                    Expense.expense_status == ExpenseStatus.DUE.value
                 )
                 .values(
                     meta_changed_dttm = now,
                     meta_changed_by = user_key,
-                    expense_status = ExpenseStatus.SETTLED.value if not status_counts.get(False) else None
+                    expense_status = ExpenseStatus.SETTLED.value if not status_counts.get(False) else ExpenseStatus.DUE.value
                 )
             ).rowcount
 
