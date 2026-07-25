@@ -29,9 +29,9 @@ class RedisEngine:
         # Required because the corporate proxy injects its own cert into the
         # TLS chain, which the default httpx trust store does not include.
         # Only apply when the bundle file is present (local/corporate environment).
-        ca_bundle = os.path.normpath(_CA_BUNDLE)
-        verify = ca_bundle if os.path.isfile(ca_bundle) else True
-        cls._r._http._client = httpx.Client(timeout=None, verify=verify)
+        # ca_bundle = os.path.normpath(_CA_BUNDLE)
+        # verify = ca_bundle if os.path.isfile(ca_bundle) else True
+        # cls._r._http._client = httpx.Client(timeout=None, verify=verify)
 
     @classmethod
     def get_instance(cls) -> "RedisEngine":
