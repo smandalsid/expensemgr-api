@@ -18,7 +18,9 @@ class CurrencyService:
     @expense_mgr_logger.wrapper_logger(log_args=True)
     def create_currency(self, currency: CurrencyBase) -> CurrencyBase:
         if self.db.fetch_one_record(
-            query=select(Currency).where(Currency.currency_code == currency.currency_code)
+            query=select(Currency).where(
+                Currency.currency_code == currency.currency_code
+            )
         ):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,

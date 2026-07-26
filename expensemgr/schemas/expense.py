@@ -6,7 +6,12 @@ from sqlalchemy import select, func
 from sqlalchemy.dialects.postgresql import array
 
 from expensemgr.database.db import get_db_class, DB
-from expensemgr.database.models.expense import DivisionBy as div_model, Currency, Expense, ExpenseVer
+from expensemgr.database.models.expense import (
+    DivisionBy as div_model,
+    Currency,
+    Expense,
+    ExpenseVer,
+)
 from expensemgr.utils.constants import DivisionBy as div_enum, VersionActiveInd
 
 
@@ -14,8 +19,10 @@ class UserExpenseShare(BaseModel):
     user_key: int
     user_share: float
 
+
 class EditUserExpenseShare(UserExpenseShare):
     expense_ver_key: int
+
 
 class CreateExpense(BaseModel):
     primary_user_key: int
@@ -27,7 +34,9 @@ class CreateExpense(BaseModel):
 
     @model_validator(mode="after")
     def validation_user_presence_in_expense(self):
-        secondary_share_user_keys = {share.user_key for share in self.user_expense_secondary_share}
+        secondary_share_user_keys = {
+            share.user_key for share in self.user_expense_secondary_share
+        }
         if self.primary_user_key not in secondary_share_user_keys:
             raise PydanticCustomError(
                 "expense-creation-error", "Primary user is not in the expense share!"
@@ -36,6 +45,11 @@ class CreateExpense(BaseModel):
 
     @model_validator(mode="after")
     def validate_secondary_shares(self):
+        if len(set([share.user_key for share in self.user_expense_secondary_share])) != len(self.user_expense_secondary_share):
+            raise PydanticCustomError(
+                "expense-creation-error", "The number of shares don't match the number of unique users!"
+            )
+
         total_secondary_share = [
             s.user_share for s in self.user_expense_secondary_share
         ]
@@ -89,6 +103,7 @@ class ExpenseShare(BaseModel):
     expense_ver_status: bool
     version_active_ind: bool
 
+
 class ExpenseOut(BaseModel):
     expense_key: int
     primary_user_key: int
@@ -99,6 +114,7 @@ class ExpenseOut(BaseModel):
     expense_share: List[ExpenseShare]
     total_amount: float
 
+
 class EditExpense(CreateExpense):
     expense_key: int
     user_expense_secondary_share: List[EditUserExpenseShare]
@@ -108,10 +124,7 @@ class EditExpense(CreateExpense):
         db_instance: DB = get_db_class()
         expense_in_db = db_instance.execute_query(
             query=select(
-                select(1)
-                .where(
-                    Expense.expense_key == self.expense_key
-                ).exists(),
+                select(1).where(Expense.expense_key == self.expense_key).exists(),
             )
         )
         if not expense_in_db.scalar():
@@ -119,18 +132,19 @@ class EditExpense(CreateExpense):
                 "edit-expense-exception", "Expense key does not exist!"
             )
         return self
-    
+
     @model_validator(mode="after")
     def validate_expense_ver_keys(self):
         db_instance: DB = get_db_class()
-        secondary_share_expense_ver_keys = {share.expense_ver_key for share in self.user_expense_secondary_share}
+        secondary_share_expense_ver_keys = {
+            share.expense_ver_key for share in self.user_expense_secondary_share
+        }
         missing_keys = db_instance.execute_query(
             query=select(
-                func.unnest(array(secondary_share_expense_ver_keys)).label("missing_keys")
-            )
-            .except_(
-                select(ExpenseVer.expense_ver_key)
-            )
+                func.unnest(array(secondary_share_expense_ver_keys)).label(
+                    "missing_keys"
+                )
+            ).except_(select(ExpenseVer.expense_ver_key))
         )
         if missing_keys.all():
             raise PydanticCustomError(
@@ -138,20 +152,21 @@ class EditExpense(CreateExpense):
             )
 
         return self
-    
+
     @model_validator(mode="after")
     def validate_expense_vers_align_with_expense(self):
         db_instance: DB = get_db_class()
         expense_key = self.expense_key
-        secondary_share_expense_ver_keys = {share.expense_ver_key for share in self.user_expense_secondary_share}
+        secondary_share_expense_ver_keys = {
+            share.expense_ver_key for share in self.user_expense_secondary_share
+        }
 
-        expense_ver_keys= db_instance.execute_query(
+        expense_ver_keys = db_instance.execute_query(
             query=select(
                 ExpenseVer.expense_ver_key.label("expense_ver_key"),
-            )
-            .where(
+            ).where(
                 ExpenseVer.expense_key == expense_key,
-                ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value
+                ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value,
             )
         )
         if set(expense_ver_keys.scalars().all()) != secondary_share_expense_ver_keys:

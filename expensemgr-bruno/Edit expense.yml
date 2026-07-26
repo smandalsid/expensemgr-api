@@ -1,0 +1,41 @@
+info:
+  name: Edit expense
+  type: http
+  seq: 3
+
+http:
+  method: PUT
+  url: http://127.0.0.1:8000/expense/edit
+  body:
+    type: json
+    data: |-
+      {
+        "primary_user_key": 1,
+        "currency_key": 74,
+        "division_by_key": 1,
+        "total_amount": 600,
+        "expense_desc": "as 3 I am saying its 1 and 3",
+        "user_expense_secondary_share": [
+          {
+            "user_key": 3,
+            "user_share": 300,
+            "expense_ver_key": 90
+          },
+          {
+            "user_key": 1,
+            "user_share": 300,
+            "expense_ver_key": 91
+          }
+        ],
+        "expense_key": 32
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzdHJpbmcyIiwidXNlcl9rZXkiOjIsImlzX2FkbWluIjpmYWxzZSwiZXhwIjoxNzc3NjYyMjY1fQ.myph-W0qDjKZsq8hybX-B0Eo0SM3NcWrCMCLAIvEy2s
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+​

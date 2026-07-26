@@ -17,6 +17,7 @@ class DeleteInd(Enum):
     YES = True
     NO = False
 
+
 class ExpenseStatus(Enum):
     SETTLED = True
     DUE = False

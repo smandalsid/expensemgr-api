@@ -1,0 +1,22 @@
+info:
+  name: delete expense
+  type: http
+  seq: 10
+
+http:
+  method: DELETE
+  url: http://127.0.0.1:8000/expense/delete?expense_key=33
+  params:
+    - name: expense_key
+      value: "33"
+      type: query
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzdHJpbmczIiwidXNlcl9rZXkiOjMsImlzX2FkbWluIjpmYWxzZSwiZXhwIjoxNzc3NjYzNTM3fQ.p2GMpVa0pldOpMMVXRpvyn4imU4ucLG-RjK2On-dglw
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+​

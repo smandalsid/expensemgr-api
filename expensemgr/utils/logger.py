@@ -13,7 +13,7 @@ class BaseLogger:
 
         stream_handler = logging.StreamHandler()
         stream_handler.setFormatter(
-            logging.Formatter(f"%(asctime)s | %(name)s | %(levelname)s | %(message)s")
+            logging.Formatter("%(asctime)s | %(name)s | %(levelname)s | %(message)s")
         )
         self.logger.addHandler(stream_handler)
 
@@ -40,7 +40,9 @@ class BaseLogger:
                             f"{func.__name__} - Query [{str(query)[:100]}] execution time: {end_time - start_time}"
                         )
                     else:
-                        self.logger.info(f"{func.__name__} - Execution time: {end_time - start_time}")
+                        self.logger.info(
+                            f"{func.__name__} - Execution time: {end_time - start_time}"
+                        )
                 except Exception as e:
                     self.logger.exception(
                         f"{func.__name__} - Exception occured: {str(e)}"

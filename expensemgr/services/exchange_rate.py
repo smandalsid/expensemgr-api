@@ -1,7 +1,5 @@
-from sqlalchemy import select
 
 from expensemgr.database.db import db_dependency
-from expensemgr.database.models.expense import Currency
 from expensemgr.routers.users import user_dependency
 from expensemgr.cache_store.redis.redis_store import redis_dependency
 from expensemgr.utils.logger import expense_mgr_logger

@@ -1,0 +1,23 @@
+info:
+  name: get access token
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: https://expensemgr-api-git-development-catalystmandal-1458s-projects.vercel.app/auth/token
+  body:
+    type: form-urlencoded
+    data:
+      - name: username
+        value: string1
+      - name: password
+        value: string1
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+​

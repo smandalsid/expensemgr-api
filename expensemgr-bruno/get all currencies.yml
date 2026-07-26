@@ -1,0 +1,17 @@
+info:
+  name: get all currencies
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: http://127.0.0.1:8000/currency/get_all
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzdHJpbmcxIiwidXNlcl9rZXkiOjEsImlzX2FkbWluIjp0cnVlLCJleHAiOjE3Nzc2NjIxMzF9.CxTn3SK4zmrHWA2n2DfgWL6fIogOndH8CD_S4rPR6kI
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

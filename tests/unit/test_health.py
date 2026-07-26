@@ -1,4 +1,4 @@
-from tests.unit.conftest import client
+
 
 def test_root(client):
     response = client.get("/health")
