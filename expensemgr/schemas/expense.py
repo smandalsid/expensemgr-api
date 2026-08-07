@@ -45,9 +45,12 @@ class CreateExpense(BaseModel):
 
     @model_validator(mode="after")
     def validate_secondary_shares(self):
-        if len(set([share.user_key for share in self.user_expense_secondary_share])) != len(self.user_expense_secondary_share):
+        if len(
+            set([share.user_key for share in self.user_expense_secondary_share])
+        ) != len(self.user_expense_secondary_share):
             raise PydanticCustomError(
-                "expense-creation-error", "The number of shares don't match the number of unique users!"
+                "expense-creation-error",
+                "The number of shares don't match the number of unique users!",
             )
 
         total_secondary_share = [

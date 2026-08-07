@@ -1,4 +1,3 @@
-
 from expensemgr.database.db import db_dependency
 from expensemgr.routers.users import user_dependency
 from expensemgr.cache_store.redis.redis_store import redis_dependency

@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from expensemgr.routers import (
+    aggregate,
     auth,
     currency,
     expense,
@@ -43,3 +44,4 @@ app.include_router(expense.router)
 app.include_router(currency.router)
 app.include_router(exchange_rate.router)
 app.include_router(division_by.router)
+app.include_router(aggregate.router)
