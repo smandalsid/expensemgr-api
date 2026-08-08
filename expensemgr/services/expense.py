@@ -141,7 +141,7 @@ class ExpenseService:
                 "primary_user_key": expense.primary_user_key,
                 "secondary_user_key": entry.user_key,
                 "expense_share": entry.user_share,
-                "expense_ver_status": expense.primary_user_key == entry.user_key,
+                "expense_ver_status": (expense.primary_user_key == entry.user_key or entry.user_share == 0 or entry.user_share == 0.0),
                 "version_effective_dttm": now,
                 "meta_changed_dttm": now,
                 "meta_changed_by": self.user.get("user_key"),
