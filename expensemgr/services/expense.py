@@ -543,7 +543,10 @@ class ExpenseService:
                     ExpenseVer.expense_ver_status.label("expense_ver_status"),
                     func.count(ExpenseVer.expense_ver_status).label("count"),
                 )
-                .where(ExpenseVer.expense_key == expense_key)
+                .where(
+                    ExpenseVer.expense_key == expense_key,
+                    ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value
+                )
                 .group_by(ExpenseVer.expense_ver_status)
             ).all()
         )

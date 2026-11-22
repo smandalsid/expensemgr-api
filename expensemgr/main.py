@@ -9,6 +9,7 @@ from expensemgr.routers import (
     users,
     exchange_rate,
     division_by,
+    connection
 )
 
 app = FastAPI(
@@ -45,3 +46,4 @@ app.include_router(currency.router)
 app.include_router(exchange_rate.router)
 app.include_router(division_by.router)
 app.include_router(aggregate.router)
+app.include_router(connection.router)

@@ -26,12 +26,15 @@ select * from [money_schema].[division_by]
 select * from [money_schema].[expense]
 select * from [money_schema].[expense_ver]
 
+update [money_schema].[expense]
+set expense_status = 1 where expense_key in (6)
+
 -- initial admin update
--- update [ExpenseMgr].[user_schema].[user]
+-- update [user_schema].[user]
 -- set is_admin = 1 where user_key = 1
 
 -- insert division by types
--- insert into [ExpenseMgr].[money_schema].[division_by] (division_by_code, division_by_type_desc)values ('AMOUNT', 'Divide expense by amount'), ('PERCENTAGE', 'Divide expense by percentage')
+-- insert into money_schema.division_by (division_by_code, division_by_type_desc, delete_ind, version_active_ind) values ('AMOUNT', 'Divide expense by amount', 'False', 'True'), ('PERCENTAGE', 'Divide expense by percentage', 'False', 'True')
 
 -- delete from tables
 -- delete from [user_schema].[user]
