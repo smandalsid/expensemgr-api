@@ -9,7 +9,7 @@ from expensemgr.routers import (
     users,
     exchange_rate,
     division_by,
-    connection
+    connection,
 )
 
 app = FastAPI(

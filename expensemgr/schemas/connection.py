@@ -5,6 +5,7 @@ from sqlalchemy import select, and_, or_
 from expensemgr.database.db import get_db_class, DB
 from expensemgr.database.models.connection import Connection
 
+
 class ConnectionBase(BaseModel):
     user_key: int
 

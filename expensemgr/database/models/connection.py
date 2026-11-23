@@ -11,6 +11,7 @@ from sqlalchemy import (
 
 from expensemgr.database.db import Base
 
+
 class Connection(Base):
     __tablename__ = "connection"
     __table_args__ = (
@@ -25,8 +26,12 @@ class Connection(Base):
     )
 
     connection_key = Column(Integer, primary_key=True, index=True)
-    user_key_1 = Column(Integer, ForeignKey("user_schema.user.user_key"), nullable=False)
-    user_key_2 = Column(Integer, ForeignKey("user_schema.user.user_key"), nullable=False)
+    user_key_1 = Column(
+        Integer, ForeignKey("user_schema.user.user_key"), nullable=False
+    )
+    user_key_2 = Column(
+        Integer, ForeignKey("user_schema.user.user_key"), nullable=False
+    )
     user_consent_1 = Column(Boolean, default=False, nullable=False)
     user_consent_2 = Column(Boolean, default=False, nullable=False)
     meta_created_dttm = Column(DateTime, default=func.now(), nullable=False)
@@ -35,5 +40,3 @@ class Connection(Base):
     version_termination_dttm = Column(DateTime, default=None, nullable=True)
     delete_ind = Column(Boolean, default=False, nullable=False)
     version_active_ind = Column(Boolean, default=True, nullable=False)
-
-    

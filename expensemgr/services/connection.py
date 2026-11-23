@@ -7,8 +7,10 @@ from expensemgr.schemas.connection import ConnectionBase
 from expensemgr.database.models.connection import Connection
 from expensemgr.utils.constants import ConnectionConsent, VersionActiveInd
 
+
 class CreateConnectionException(Exception):
     pass
+
 
 class ConnectionService:
     def __init__(self, db: db_dependency, user: user_dependency):
@@ -33,8 +35,9 @@ class ConnectionService:
                             select(literal(1)).where(
                                 Connection.user_key_1 == user_key,
                                 Connection.user_key_2 == connection.user_key,
-                                Connection.user_consent_1 == ConnectionConsent.YES.value,
-                                Connection.user_consent_2 == ConnectionConsent.NO.value
+                                Connection.user_consent_1
+                                == ConnectionConsent.YES.value,
+                                Connection.user_consent_2 == ConnectionConsent.NO.value,
                             )
                         ),
                         True,
@@ -54,15 +57,19 @@ class ConnectionService:
                                     and_(
                                         Connection.user_key_1 == user_key,
                                         Connection.user_key_2 == connection.user_key,
-                                        Connection.user_consent_1 == ConnectionConsent.YES.value,
-                                        Connection.user_consent_2 == ConnectionConsent.YES.value
+                                        Connection.user_consent_1
+                                        == ConnectionConsent.YES.value,
+                                        Connection.user_consent_2
+                                        == ConnectionConsent.YES.value,
                                     ),
                                     and_(
                                         Connection.user_key_1 == connection.user_key,
                                         Connection.user_key_2 == user_key,
-                                        Connection.user_consent_1 == ConnectionConsent.YES.value,
-                                        Connection.user_consent_2 == ConnectionConsent.YES.value
-                                    )
+                                        Connection.user_consent_1
+                                        == ConnectionConsent.YES.value,
+                                        Connection.user_consent_2
+                                        == ConnectionConsent.YES.value,
+                                    ),
                                 )
                             )
                         ),
@@ -81,8 +88,9 @@ class ConnectionService:
                             select(literal(1)).where(
                                 Connection.user_key_1 == connection.user_key,
                                 Connection.user_key_2 == user_key,
-                                Connection.user_consent_1 == ConnectionConsent.YES.value,
-                                Connection.user_consent_2 == ConnectionConsent.NO.value
+                                Connection.user_consent_1
+                                == ConnectionConsent.YES.value,
+                                Connection.user_consent_2 == ConnectionConsent.NO.value,
                             )
                         ),
                         True,
@@ -92,39 +100,37 @@ class ConnectionService:
             )
             if conn.execute(query).scalar():
                 now = datetime.now(timezone.utc)
-                query = update(
-                    Connection
-                ).where(
-                    Connection.user_key_1 == connection.user_key,
-                    Connection.user_key_2 == user_key,
-                    Connection.user_consent_1 == ConnectionConsent.YES.value,
-                    Connection.user_consent_2 == ConnectionConsent.NO.value
-                ).values(
-                    meta_changed_dttm = now,
-                    version_termination_dttm = now,
-                    version_active_ind = VersionActiveInd.INACTIVE.value
+                query = (
+                    update(Connection)
+                    .where(
+                        Connection.user_key_1 == connection.user_key,
+                        Connection.user_key_2 == user_key,
+                        Connection.user_consent_1 == ConnectionConsent.YES.value,
+                        Connection.user_consent_2 == ConnectionConsent.NO.value,
+                    )
+                    .values(
+                        meta_changed_dttm=now,
+                        version_termination_dttm=now,
+                        version_active_ind=VersionActiveInd.INACTIVE.value,
+                    )
                 )
                 conn.execute(query)
-                query = insert(
-                    Connection
-                ).values(
-                    user_key_1 = connection.user_key,
-                    user_key_2 = user_key,
-                    user_consent_1 = ConnectionConsent.YES.value,
-                    user_consent_2 = ConnectionConsent.YES.value,
-                    meta_created_dttm = now,
-                    version_effective_dttm = now,
+                query = insert(Connection).values(
+                    user_key_1=connection.user_key,
+                    user_key_2=user_key,
+                    user_consent_1=ConnectionConsent.YES.value,
+                    user_consent_2=ConnectionConsent.YES.value,
+                    meta_created_dttm=now,
+                    version_effective_dttm=now,
                 )
                 conn.execute(query)
-                return {"detail": 'Accepted a pending connection!'}
-            
-            query = insert(
-                Connection
-            ).values(
-                user_key_1 = user_key,
-                user_key_2 = connection.user_key,
-                user_consent_1 = ConnectionConsent.YES.value
+                return {"detail": "Accepted a pending connection!"}
+
+            query = insert(Connection).values(
+                user_key_1=user_key,
+                user_key_2=connection.user_key,
+                user_consent_1=ConnectionConsent.YES.value,
             )
 
             conn.execute(query)
-            return {'detail': 'Sent a connection request!'}
+            return {"detail": "Sent a connection request!"}

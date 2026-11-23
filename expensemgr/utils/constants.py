@@ -22,6 +22,7 @@ class ExpenseStatus(Enum):
     SETTLED = True
     DUE = False
 
+
 class ConnectionConsent(Enum):
     YES = True
     NO = False
