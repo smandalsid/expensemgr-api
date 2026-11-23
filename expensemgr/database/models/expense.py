@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from sqlalchemy import (
     Boolean,
     Column,
@@ -9,6 +11,7 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
     func,
+    Date
 )
 
 from expensemgr.database.db import Base
@@ -79,6 +82,9 @@ class Expense(Base):
     )
     expense_status = Column(Boolean, default=False, nullable=False)
     delete_ind = Column(Boolean, default=False, nullable=False)
+    expense_dt = Column(
+        Date, default=lambda: datetime.now(timezone.utc).date(), nullable=False
+    )
 
 
 class ExpenseVer(Base):

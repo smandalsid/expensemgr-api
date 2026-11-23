@@ -12,7 +12,7 @@ from expensemgr.services.expense import (
     ExpenseDeleteException,
     ExpenseSettleException,
 )
-from expensemgr.utils.constants import auth_failed
+from expensemgr.utils.constants import auth_failed, ExpenseOrderBy
 from expensemgr.utils.logger import expense_mgr_logger
 
 router = APIRouter(
@@ -42,13 +42,17 @@ def create_expense(
     response_model=Optional[List[ExpenseOut]],
 )
 @expense_mgr_logger.wrapper_logger(log_args=False)
-def get_all_expenses(db: db_dependency, user: user_dependency):
+def get_all_expenses(
+    db: db_dependency,
+    user: user_dependency,
+    order_by: ExpenseOrderBy = ExpenseOrderBy.EXPENSE_DT,
+):
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=auth_failed
         )
 
-    return ExpenseService(db=db, user=user).get_all_expenses()
+    return ExpenseService(db=db, user=user).get_all_expenses(order_by=order_by)
 
 
 @router.get(
@@ -57,12 +61,16 @@ def get_all_expenses(db: db_dependency, user: user_dependency):
     response_model=Optional[List[ExpenseOut]],
 )
 @expense_mgr_logger.wrapper_logger(log_args=False)
-def get_active_expenses(db: db_dependency, user: user_dependency):
+def get_active_expenses(
+    db: db_dependency,
+    user: user_dependency,
+    order_by: ExpenseOrderBy = ExpenseOrderBy.EXPENSE_DT,
+):
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=auth_failed
         )
-    return ExpenseService(db=db, user=user).get_active_expenses()
+    return ExpenseService(db=db, user=user).get_active_expenses(order_by=order_by)
 
 
 @router.get("/get/", status_code=status.HTTP_200_OK, response_model=ExpenseOut)

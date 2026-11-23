@@ -1,10 +1,11 @@
-from typing import List
+import calendar
+from typing import List, Optional
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, field_validator, model_validator
 from pydantic_core import PydanticCustomError
 from sqlalchemy import select, func
 from sqlalchemy.dialects.postgresql import array
-from datetime import datetime
+from datetime import date, datetime, timezone
 
 from expensemgr.database.db import get_db_class, DB
 from expensemgr.database.models.expense import (
@@ -14,6 +15,13 @@ from expensemgr.database.models.expense import (
     ExpenseVer,
 )
 from expensemgr.utils.constants import DivisionBy as div_enum, VersionActiveInd
+
+
+def _shift_months(d: date, months: int) -> date:
+    year, month = divmod(d.year * 12 + d.month - 1 + months, 12)
+    month += 1
+    day = min(d.day, calendar.monthrange(year, month)[1])
+    return date(year, month, day)
 
 
 class UserExpenseShare(BaseModel):
@@ -31,7 +39,21 @@ class CreateExpense(BaseModel):
     division_by_key: int
     total_amount: float
     expense_desc: str
+    expense_dt: Optional[date] = None
     user_expense_secondary_share: List[UserExpenseShare]
+
+    @field_validator("expense_dt")
+    @classmethod
+    def validate_expense_dt(cls, value: Optional[date]):
+        if value is None:
+            return value
+        today = datetime.now(timezone.utc).date()
+        if not _shift_months(today, -1) <= value <= _shift_months(today, 1):
+            raise PydanticCustomError(
+                "expense-creation-error",
+                "Expense date must be within a month of today!",
+            )
+        return value
 
     @model_validator(mode="after")
     def validation_user_presence_in_expense(self):
@@ -111,6 +133,7 @@ class ExpenseShare(BaseModel):
 
 
 class ExpenseOut(BaseModel):
+    expense_dt: date
     expense_key: int
     primary_user_key: int
     primary_user_name: str

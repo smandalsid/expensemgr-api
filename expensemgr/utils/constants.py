@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
 auth_failed = "Authentication Failed!"
 
@@ -26,3 +26,8 @@ class ExpenseStatus(Enum):
 class ConnectionConsent(Enum):
     YES = True
     NO = False
+
+
+class ExpenseOrderBy(IntEnum):
+    EXPENSE_DT = 0
+    LAST_UPDATED = 1
