@@ -28,7 +28,12 @@ from expensemgr.database.models.expense import Expense, ExpenseVer, Currency, Di
 from expensemgr.database.models.users import User
 from expensemgr.routers.users import user_dependency
 from expensemgr.utils.logger import expense_mgr_logger
-from expensemgr.utils.constants import VersionActiveInd, DeleteInd, ExpenseStatus
+from expensemgr.utils.constants import (
+    VersionActiveInd,
+    DeleteInd,
+    ExpenseStatus,
+    ExpenseOrderBy,
+)
 
 
 class ExpenseCreationException(Exception):
@@ -62,6 +67,7 @@ class ExpenseService:
         get_active: Optional[bool] = False,
         get_history: Optional[bool] = False,
         get_deleted: Optional[bool] = False,
+        order_by: ExpenseOrderBy = ExpenseOrderBy.EXPENSE_DT,
     ):
         u1: User = aliased(User)
         u2: User = aliased(User)
@@ -83,8 +89,17 @@ class ExpenseService:
                 ExpenseVer.version_active_ind == VersionActiveInd.INACTIVE.value,
             )
 
+        if order_by == ExpenseOrderBy.EXPENSE_DT:
+            order_clauses = (
+                Expense.expense_dt.desc(),
+                Expense.meta_changed_dttm.desc(),
+            )
+        else:
+            order_clauses = (Expense.meta_changed_dttm.desc(),)
+
         return (
             select(
+                Expense.expense_dt.label("expense_dt"),
                 Expense.expense_key.label("expense_key"),
                 u1.user_key.label("primary_user_key"),
                 func.concat(u1.first_name, literal(" "), u1.last_name).label(
@@ -115,12 +130,17 @@ class ExpenseService:
             .join(Currency, Expense.currency_key == Currency.currency_key)
             .join(DivisionBy, Expense.division_by_key == DivisionBy.division_by_key)
             .where(expense_ver_condition)
-            .order_by(Expense.meta_changed_dttm.desc())
+            .order_by(
+                *order_clauses,
+                Expense.expense_key.desc(),
+                ExpenseVer.expense_ver_key,
+            )
         )
 
     def _rows_to_expense_out(self, rows) -> ExpenseOut:
         first = rows[0]
         return ExpenseOut(
+            expense_dt=first.expense_dt,
             expense_key=first.expense_key,
             primary_user_key=first.primary_user_key,
             primary_user_name=first.primary_user_name,
@@ -209,6 +229,7 @@ class ExpenseService:
                         division_by_key=expense.division_by_key,
                         total_amount=expense.total_amount,
                         expense_desc=expense.expense_desc,
+                        expense_dt=expense.expense_dt or now.date(),
                         meta_changed_by=self.user.get("user_key"),
                         expense_status=self_expense,
                         meta_created_dttm=now,
@@ -236,7 +257,9 @@ class ExpenseService:
             raise e
 
     @expense_mgr_logger.wrapper_logger(log_args=True)
-    def get_all_expenses(self) -> Optional[List[ExpenseOut]]:
+    def get_all_expenses(
+        self, order_by: ExpenseOrderBy = ExpenseOrderBy.EXPENSE_DT
+    ) -> Optional[List[ExpenseOut]]:
         expense_keys_cte = (
             select(ExpenseVer.expense_key)
             .where(
@@ -252,6 +275,7 @@ class ExpenseService:
             query=self._build_expense_query(
                 Expense.expense_key.in_(select(expense_keys_cte.c.expense_key)),
                 get_history=True,
+                order_by=order_by,
             )
         )
         if not expense_outs:
@@ -264,7 +288,9 @@ class ExpenseService:
         return [self._rows_to_expense_out(rows) for rows in grouped.values()]
 
     @expense_mgr_logger.wrapper_logger(log_args=True)
-    def get_active_expenses(self) -> Optional[List[ExpenseOut]]:
+    def get_active_expenses(
+        self, order_by: ExpenseOrderBy = ExpenseOrderBy.EXPENSE_DT
+    ) -> Optional[List[ExpenseOut]]:
         user_key = self.user.get("user_key")
         expense_keys_cte = (
             select(ExpenseVer.expense_key)
@@ -282,6 +308,7 @@ class ExpenseService:
                     select(expense_keys_cte.c.expense_key)
                 ),
                 get_active=True,
+                order_by=order_by,
             )
         )
         if not expense_outs:
@@ -357,18 +384,21 @@ class ExpenseService:
                     "Can't Edit! An expense share has already been settled."
                 )
 
+            expense_values = dict(
+                primary_user_key=expense.primary_user_key,
+                currency_key=expense.currency_key,
+                division_by_key=expense.division_by_key,
+                total_amount=expense.total_amount,
+                expense_desc=expense.expense_desc,
+                meta_changed_dttm=now,
+                meta_changed_by=user_key,
+            )
+            if expense.expense_dt is not None:
+                expense_values["expense_dt"] = expense.expense_dt
             query = (
                 update(Expense)
                 .where(Expense.expense_key == expense.expense_key)
-                .values(
-                    primary_user_key=expense.primary_user_key,
-                    currency_key=expense.currency_key,
-                    division_by_key=expense.division_by_key,
-                    total_amount=expense.total_amount,
-                    expense_desc=expense.expense_desc,
-                    meta_changed_dttm=now,
-                    meta_changed_by=user_key,
-                )
+                .values(**expense_values)
             )
             conn.execute(statement=query)
 
