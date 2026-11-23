@@ -22,5 +22,9 @@ def get_aggregate(db: db_dependency, user: user_dependency):
 
 @router.put("/settle", status_code=status.HTTP_202_ACCEPTED)
 @expense_mgr_logger.wrapper_logger(log_args=False)
-def settle_aggregate(db: db_dependency, user: user_dependency, settle_with_user_key: int):
-    return AggregateService(db=db, user=user).settle_aggregate(settle_with_user_key=settle_with_user_key)
+def settle_aggregate(
+    db: db_dependency, user: user_dependency, settle_with_user_key: int
+):
+    return AggregateService(db=db, user=user).settle_aggregate(
+        settle_with_user_key=settle_with_user_key
+    )

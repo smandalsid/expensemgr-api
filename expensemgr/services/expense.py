@@ -57,10 +57,32 @@ class ExpenseService:
         self.user = user
 
     def _build_expense_query(
-        self, expense_ver_condition, get_active: Optional[bool] = False
+        self,
+        expense_ver_condition,
+        get_active: Optional[bool] = False,
+        get_history: Optional[bool] = False,
+        get_deleted: Optional[bool] = False,
     ):
         u1: User = aliased(User)
         u2: User = aliased(User)
+        and_cond = true()
+        if get_active:
+            and_cond = and_(
+                Expense.expense_status == ExpenseStatus.DUE.value,
+                Expense.delete_ind == DeleteInd.NO.value,
+                ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value,
+            )
+        if get_history:
+            and_cond = and_(
+                Expense.delete_ind == DeleteInd.NO.value,
+                ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value,
+            )
+        if get_deleted:
+            and_cond = and_(
+                Expense.delete_ind == DeleteInd.YES.value,
+                ExpenseVer.version_active_ind == VersionActiveInd.INACTIVE.value,
+            )
+
         return (
             select(
                 Expense.expense_key.label("expense_key"),
@@ -86,16 +108,7 @@ class ExpenseService:
             .select_from(Expense)
             .join(
                 ExpenseVer,
-                and_(
-                    Expense.expense_key == ExpenseVer.expense_key,
-                    and_(
-                        Expense.expense_status == ExpenseStatus.DUE.value,
-                        Expense.delete_ind == DeleteInd.NO.value,
-                        ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value,
-                    )
-                    if get_active
-                    else true(),
-                ),
+                and_(Expense.expense_key == ExpenseVer.expense_key, and_cond),
             )
             .join(u1, Expense.primary_user_key == u1.user_key)
             .join(u2, ExpenseVer.secondary_user_key == u2.user_key)
@@ -124,7 +137,7 @@ class ExpenseService:
                     expense_ver_status=row.expense_ver_status,
                     version_active_ind=row.version_active_ind,
                     meta_created_dttm=row.meta_created_dttm,
-                    meta_changed_dttm=row.meta_changed_dttm
+                    meta_changed_dttm=row.meta_changed_dttm,
                 )
                 for row in rows
             ],
@@ -144,7 +157,11 @@ class ExpenseService:
                 "primary_user_key": expense.primary_user_key,
                 "secondary_user_key": entry.user_key,
                 "expense_share": entry.user_share,
-                "expense_ver_status": (expense.primary_user_key == entry.user_key or entry.user_share == 0 or entry.user_share == 0.0),
+                "expense_ver_status": (
+                    expense.primary_user_key == entry.user_key
+                    or entry.user_share == 0
+                    or entry.user_share == 0.0
+                ),
                 "version_effective_dttm": now,
                 "meta_changed_dttm": now,
                 "meta_changed_by": self.user.get("user_key"),
@@ -233,7 +250,8 @@ class ExpenseService:
 
         expense_outs = self.db.fetch_records(
             query=self._build_expense_query(
-                Expense.expense_key.in_(select(expense_keys_cte.c.expense_key))
+                Expense.expense_key.in_(select(expense_keys_cte.c.expense_key)),
+                get_history=True,
             )
         )
         if not expense_outs:
@@ -545,7 +563,7 @@ class ExpenseService:
                 )
                 .where(
                     ExpenseVer.expense_key == expense_key,
-                    ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value
+                    ExpenseVer.version_active_ind == VersionActiveInd.ACTIVE.value,
                 )
                 .group_by(ExpenseVer.expense_ver_status)
             ).all()
@@ -576,10 +594,12 @@ class ExpenseService:
         engine = self.db.get_engine()
         try:
             with engine.begin() as conn:
-                settled = self._settle_expense_ver(conn=conn, expense_ver_key=expense_ver_key)
+                settled = self._settle_expense_ver(
+                    conn=conn, expense_ver_key=expense_ver_key
+                )
                 if settled:
                     return {"detail": "Expense settled!"}
                 else:
-                    raise ExpenseSettleException('Uncaught Exception!')
+                    raise ExpenseSettleException("Uncaught Exception!")
         except Exception as e:
             raise ExpenseSettleException(f"Failed to settle Expense! {str(e)}")
